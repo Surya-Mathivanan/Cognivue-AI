@@ -1,0 +1,17 @@
+Final Prompt (with login + theme)
+
+Build a full-stack web application called “LLM-Powered Cognitive Interview Assistant for HR Screening.” The purpose of this application is to help students or freshers practice and experience HR and technical interviews with the help of AI. The app should start with a login screen where the project title is displayed in the center at the top, and just below it there should be only one option: “Login with Google” or “Continue with Google.” The overall theme of the application should follow a Supabase-like UI, but instead of green highlights, this application must use lavender with an active neon color for highlighted features and interactive elements.
+
+Once the user logs in, they can either choose resume-based mode by uploading a PDF resume or select role-based mode from a dropdown list. After choosing the mode, the student must select the difficulty level as beginner, intermediate, or advanced. Based on this input, the backend will call the Google Gemini LLM API to generate HR questions, technical questions, and cultural questions. The student will answer via voice, and the system should include speech-to-text conversion so that responses can be transcribed. These transcribed answers will be evaluated by the backend using NLP comparison against an ideal LLM-generated answer. The evaluation must provide a breakdown highlighting strong areas, weak areas, communication skill level, and suggestions for improvement.
+
+After the interview session, a feedback dashboard should be displayed showing these insights, while the results must also be stored in a MySQL database for future reference. The frontend must be developed using React.js with JSX only (no TypeScript, no Tailwind CSS) and styling should be handled completely in index.css. The UI should be professional and simple with clearly separated pages: login screen, interview mode selection, resume upload, role selection, difficulty level selection, interview screen (with mic recording and transcribed text display), and feedback dashboard (with strengths, weaknesses, communication score, and improvement suggestions).
+
+The backend must be developed using Python Flask, providing REST API endpoints for uploading resumes, extracting resume keywords, selecting roles, generating questions, converting speech to text, evaluating answers, storing results, and retrieving feedback. Flask should include CORS support for frontend-backend integration. The backend will integrate with Google Gemini API for question generation and answer evaluation, and a Speech-to-Text API for transcription. MySQL should contain tables for users, interviews, responses, and feedback. The workflow starts from login, continues through interview setup and answering, and ends with evaluation, feedback storage, and result display. The final application must follow this full flow with the defined tech stack: React.js (frontend), Flask (backend), MySQL (database), and Gemini API (LLM engine).
+
+I want this entire app to be full stack web application, including both frontend and backend, and most importantly, the whole project should be built using Python Flask web application.
+
+
+=======================================================================================================================================
+
+
+
