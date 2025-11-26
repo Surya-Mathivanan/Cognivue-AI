@@ -119,6 +119,29 @@ Tagline suggestion:
 
 ---
 
+## 📸 Application Screenshots
+
+### 🔐 Login Page
+![Login Page](Images/login%20page.png)
+
+### 🏠 Home Page
+![Home Page](Images/home%20page%20white.png)
+
+### 🎯 Role Selection
+![Role Selection](Images/role%20upload%20page.png)
+
+### 📄 Resume Upload
+![Resume Upload](Images/resume%20upload%20page.png)
+
+### 🎙 Interview Answer Page
+![Interview Answer](Images/interview%20answer%20page.png)
+
+### 📊 Dashboard
+![Dashboard1](Images/dashboard%201.png)
+![Dashboard2](Images/dashboard%202.png)
+![Dashboard3](Images/dashboard%203.png)
+
+
 ## 🏗️ System Architecture
 
 ```
