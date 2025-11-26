@@ -7,9 +7,10 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, current_user
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 from werkzeug.utils import secure_filename
 import json
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 # Load environment variables from root .env
 # Try multiple paths to find .env file
@@ -32,6 +33,26 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
 frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+
+token_serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'], salt='api-token')
+API_TOKEN_MAX_AGE = int(os.environ.get('API_TOKEN_MAX_AGE', 60 * 60 * 24 * 7))  # 7 days
+
+def generate_api_token(user_id: int) -> str:
+    return token_serializer.dumps({'user_id': user_id})
+
+def verify_api_token(token: str) -> int | None:
+    try:
+        data = token_serializer.loads(token, max_age=API_TOKEN_MAX_AGE)
+        return data.get('user_id')
+    except (BadSignature, SignatureExpired):
+        return None
+
+def append_query_params(url: str, params: dict[str, str]) -> str:
+    parsed = urlparse(url)
+    query_params = dict(parse_qsl(parsed.query, keep_blank_values=True))
+    query_params.update(params)
+    new_query = urlencode(query_params)
+    return urlunparse(parsed._replace(query=new_query))
 
 def _is_local_host(url: str) -> bool:
     parsed = urlparse(url)
@@ -75,6 +96,20 @@ app.register_blueprint(google_auth)
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
+@login_manager.request_loader
+def load_user_from_request(request):
+    auth_header = request.headers.get('Authorization', '')
+    token = None
+    if auth_header.startswith('Bearer '):
+        token = auth_header.split(' ', 1)[1].strip()
+    if not token:
+        token = request.headers.get('X-API-Token')
+    if token:
+        user_id = verify_api_token(token)
+        if user_id:
+            return db.session.get(User, int(user_id))
+    return None
 
 # Serve React App
 @app.route('/')
