@@ -1,23 +1,24 @@
-import React from 'react';
-import { API_BASE_URL } from '../api';
+import React from "react";
+import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../api";
 
-function LoginScreen({ setUser }) {
+function LoginScreen({ setUser, theme = "dark", toggleTheme }) {
   const handleGoogleLogin = () => {
     window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   return (
     <div className="login-screen">
+      
       <div className="login-container">
         {/* Left Panel - Minimal Login Form */}
         <div className="login-panel">
           <div className="login-content">
             <div className="welcome-section">
-              <h1 className="welcome-title">
-                Cognivue AI
-              </h1>
+              <h1 className="welcome-title">Cognivue AI</h1>
               <p className="welcome-subtitle">
-                LLM-Powered Cognitive Interview Assistant, Master your interview skills with AI-powered personalized feedback
+                LLM-Powered Cognitive Interview Assistant, Master your interview
+                skills with AI-powered personalized feedback
               </p>
             </div>
 
@@ -41,17 +42,27 @@ function LoginScreen({ setUser }) {
             {/* Footer Links */}
             <div className="login-footer">
               <p className="footer-text">
-                By continuing, you agree to our{' '}
-                <a href="/terms" className="footer-link">Terms of Service</a>
-                {' '}and{' '}
-                <a href="/terms" className="footer-link">Privacy Policy</a>
+                By continuing, you agree to our{" "}
+                <Link to="/terms" className="footer-link">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link to="/privacy" className="footer-link">
+                  Privacy Policy
+                </Link>
               </p>
               <p className="creators-text">
-                Created by{' '}
-                <a href="/terms" className="creator-link">
-                  Cognivue AI Team
-                </a>
-              </p>
+   {" "}
+  <button
+    type="button"
+    onClick={toggleTheme}
+    className="creator-link"
+    style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+  >
+    {theme === "dark" ? "Light Mode – Click Here" : "Dark Mode – Click Here"}
+  </button>
+</p>
+              
             </div>
           </div>
         </div>
@@ -68,7 +79,9 @@ function LoginScreen({ setUser }) {
                 </svg>
               </div> */}
               <h2 className="visual-main-title">Analyze. Adapt. Succeed.</h2>
-              <p className="visual-subtitle">Your AI-powered interview preparation platform</p>
+              <p className="visual-subtitle">
+                Your AI-powered interview preparation platform
+              </p>
             </div>
 
             {/* Interactive Feature Cards */}
@@ -76,34 +89,45 @@ function LoginScreen({ setUser }) {
               <div className="feature-card-interactive">
                 <div className="feature-card-icon">🎯</div>
                 <h3>Smart Question Generation</h3>
-                <p>AI analyzes your resume and generates targeted questions for your role</p>
+                <p>
+                  AI analyzes your resume and generates targeted questions for
+                  your role
+                </p>
               </div>
-              
+
               <div className="feature-card-interactive">
                 <div className="feature-card-icon">💬</div>
                 <h3>Real-time Feedback</h3>
-                <p>Get instant AI-powered feedback on your responses and improve continuously</p>
+                <p>
+                  Get instant AI-powered feedback on your responses and improve
+                  continuously
+                </p>
               </div>
-              
+
               <div className="feature-card-interactive">
                 <div className="feature-card-icon">📊</div>
                 <h3>Progress Tracking</h3>
-                <p>Track your performance across multiple categories and difficulty levels</p>
+                <p>
+                  Track your performance across multiple categories and
+                  difficulty levels
+                </p>
               </div>
-              
+
               <div className="feature-card-interactive">
                 <div className="feature-card-icon">🚀</div>
                 <h3>Interview Ready</h3>
-                <p>Build confidence with practice sessions tailored to your target companies</p>
+                <p>
+                  Build confidence with practice sessions tailored to your
+                  target companies
+                </p>
               </div>
             </div>
 
-           
-            
-
             {/* Powered By Section */}
             <div className="powered-by-section">
-              <span className="powered-badge">⚡ Powered by Google Gemini AI</span>
+              <span className="powered-badge">
+                ⚡ Powered by Google Gemini AI
+              </span>
             </div>
           </div>
         </div>
@@ -113,4 +137,3 @@ function LoginScreen({ setUser }) {
 }
 
 export default LoginScreen;
-
