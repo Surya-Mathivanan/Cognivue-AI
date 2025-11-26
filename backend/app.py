@@ -7,6 +7,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, current_user
+from urllib.parse import urlparse
 from werkzeug.utils import secure_filename
 import json
 
@@ -30,6 +31,28 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:/
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
+frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+
+def _is_local_host(url: str) -> bool:
+    parsed = urlparse(url)
+    hostname = (parsed.hostname or '').lower()
+    return hostname in {'localhost', '127.0.0.1'} or hostname.endswith('.local')
+
+is_local_frontend = _is_local_host(frontend_url)
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax' if is_local_frontend else 'None'
+app.config['SESSION_COOKIE_SECURE'] = not is_local_frontend
+
+extra_origins = os.environ.get('CORS_ORIGINS')
+origins = {'http://localhost:3000'}
+if frontend_url:
+    origins.add(frontend_url)
+
+if extra_origins:
+    for origin in extra_origins.split(','):
+        cleaned = origin.strip().rstrip('/')
+        if cleaned:
+            origins.add(cleaned)
+
 # Create upload folder
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -38,7 +61,8 @@ from models import User, InterviewSession, db
 
 # Initialize extensions
 db.init_app(app)
-CORS(app, supports_credentials=True, origins=['http://localhost:3000', 'https://cognivue-aii.vercel.app'])
+CORS(app, supports_credentials=True, origins=list(origins))
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'google_auth.login'  # type: ignore
