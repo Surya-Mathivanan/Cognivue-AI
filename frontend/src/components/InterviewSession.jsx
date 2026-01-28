@@ -11,7 +11,17 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
   const [loading, setLoading] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
+  
+  // Refs for speech recognition
   const recognitionRef = useRef(null);
+  const baseAnswerRef = useRef('');              // Text before recording started
+  const isRecordingRef = useRef(false);          // Persistent recording state for callbacks
+  const latestAnswerRef = useRef(currentAnswer); // Latest answer for auto-restart
+
+  // Synchronize latestAnswerRef with currentAnswer
+  useEffect(() => {
+    latestAnswerRef.current = currentAnswer;
+  }, [currentAnswer]);
 
   useEffect(() => {
     // Check for speech recognition support
@@ -19,23 +29,62 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
       setSpeechSupported(true);
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
+      
+      // Configuration for continuous recording
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = 'en-US'; // Can be made configurable
       
+      // Real-time transcription handler
       recognitionRef.current.onresult = (event) => {
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          }
+        // Accumulate all results from this recording session
+        let fullTranscriptSinceStart = '';
+        for (let i = 0; i < event.results.length; i++) {
+          fullTranscriptSinceStart += event.results[i][0].transcript;
         }
-        if (finalTranscript) {
-          setCurrentAnswer(prev => prev + finalTranscript);
+
+        // Combine previous text + new transcript
+        const newTotalAnswer = baseAnswerRef.current + 
+          (baseAnswerRef.current && fullTranscriptSinceStart ? ' ' : '') + 
+          fullTranscriptSinceStart;
+        
+        setCurrentAnswer(newTotalAnswer);
+      };
+
+      // Auto-restart handler for continuous recording
+      recognitionRef.current.onend = () => {
+        if (isRecordingRef.current) {
+          // User still wants to record, restart the session
+          baseAnswerRef.current = latestAnswerRef.current;
+          try {
+            recognitionRef.current.start();
+          } catch (e) {
+            console.error("Failed to restart speech recognition", e);
+            setIsRecording(false);
+            isRecordingRef.current = false;
+          }
+        } else {
+          setIsRecording(false);
         }
       };
 
-      recognitionRef.current.onend = () => {
-        setIsRecording(false);
+      // Error handling
+      recognitionRef.current.onerror = (event) => {
+        console.warn("Speech recognition error", event.error);
+        
+        if (event.error === 'not-allowed') {
+          // Microphone permission denied
+          alert('Microphone permission denied. Please allow microphone access to use voice recording.');
+          setIsRecording(false);
+          isRecordingRef.current = false;
+        } else if (event.error === 'no-speech') {
+          // No speech detected - this is normal, just continue
+          console.log('No speech detected, continuing...');
+        } else if (event.error === 'network') {
+          alert('Network error occurred during speech recognition. Please check your connection.');
+          setIsRecording(false);
+          isRecordingRef.current = false;
+        }
       };
     }
 
@@ -150,15 +199,43 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
 
   const startRecording = () => {
     if (recognitionRef.current && speechSupported) {
-      setIsRecording(true);
-      recognitionRef.current.start();
+      baseAnswerRef.current = currentAnswer;  // Save current text before recording
+      isRecordingRef.current = true;          // Set persistent recording flag
+      setIsRecording(true);                   // Update UI state
+      try {
+        recognitionRef.current.start();       // Start listening
+      } catch (e) {
+        console.error("Error starting speech recognition:", e);
+        if (e.name === 'InvalidStateError') {
+          // Recognition is already started, stop and restart
+          recognitionRef.current.stop();
+          setTimeout(() => {
+            try {
+              recognitionRef.current.start();
+            } catch (retryError) {
+              console.error("Failed to restart recognition:", retryError);
+              setIsRecording(false);
+              isRecordingRef.current = false;
+            }
+          }, 100);
+        } else {
+          setIsRecording(false);
+          isRecordingRef.current = false;
+          alert('Failed to start voice recording. Please try again.');
+        }
+      }
     }
   };
 
   const stopRecording = () => {
     if (recognitionRef.current && isRecording) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
+      isRecordingRef.current = false;  // Signal intent to stop (prevents auto-restart)
+      setIsRecording(false);           // Update UI state
+      try {
+        recognitionRef.current.stop();   // Stop listening
+      } catch (e) {
+        console.error("Error stopping speech recognition:", e);
+      }
     }
   };
 
