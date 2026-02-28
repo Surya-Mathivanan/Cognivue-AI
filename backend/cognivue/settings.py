@@ -23,7 +23,22 @@ for env_path in env_paths:
 # ─── Security ─────────────────────────────────────────────────────────────────
 SECRET_KEY = os.environ.get('SESSION_SECRET', 'django-insecure-dev-please-change-in-production')
 DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() in ('1', 'true', 'yes')
-ALLOWED_HOSTS = ['*']
+
+# Allow all Render subdomains + localhost
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')
+ALLOWED_HOSTS = ['*'] if DEBUG else list(filter(None, [
+    'localhost',
+    '127.0.0.1',
+    RENDER_EXTERNAL_HOSTNAME,
+    # Add your custom domain if any
+    os.environ.get('ALLOWED_HOST', ''),
+]))
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*']  # Fallback just in case
+
+# Only allow OAuth over HTTP in local development
+if DEBUG:
+    os.environ.setdefault('OAUTHLIB_INSECURE_TRANSPORT', '1')
 
 # ─── Application definition ───────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -116,6 +131,8 @@ SESSION_COOKIE_SECURE = not _local
 SESSION_COOKIE_HTTPONLY = True
 
 CSRF_TRUSTED_ORIGINS = [FRONTEND_URL, 'http://localhost:3000', 'http://localhost:8000']
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 
 # ─── CORS ─────────────────────────────────────────────────────────────────────
 CORS_ALLOW_CREDENTIALS = True
@@ -124,6 +141,7 @@ CORS_ALLOWED_ORIGINS = list(filter(None, {
     'http://localhost:3000',
     'http://localhost:8000',
     FRONTEND_URL,
+    f'https://{RENDER_EXTERNAL_HOSTNAME}' if RENDER_EXTERNAL_HOSTNAME else '',
     *[o.strip().rstrip('/') for o in _extra_origins.split(',') if o.strip()],
 }))
 

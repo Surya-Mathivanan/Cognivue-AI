@@ -4,10 +4,6 @@ Mirrors the Flask google_auth.py blueprint logic.
 """
 import json
 import os
-
-# Allow OAuth over HTTP for local development
-os.environ.setdefault('OAUTHLIB_INSECURE_TRANSPORT', '1')
-
 import requests
 from django.conf import settings
 from django.contrib.auth import login, logout
