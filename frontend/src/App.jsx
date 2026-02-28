@@ -26,24 +26,40 @@ function App() {
   };
 
   useEffect(() => {
-    fetch(getApiUrl("/api/user-info"), {
+    // ── FIX: Loading animation bug ──────────────────────────────────────────
+    // Add AbortController + 8-second timeout so the spinner doesn't hang
+    // if the backend is down, cold-starting, or unreachable.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    fetch(getApiUrl("/api/user-info/"), {
       credentials: "include",
+      signal: controller.signal,
     })
       .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Not logged in");
+        if (response.ok) return response.json();
+        throw new Error("Not authenticated");
       })
       .then((userData) => {
         setUser(userData);
       })
       .catch((error) => {
-        console.log("User not logged in");
+        if (error.name === "AbortError") {
+          console.warn("User-info check timed out — backend may be starting up");
+        } else {
+          console.log("User not logged in");
+        }
+        setUser(null);
       })
       .finally(() => {
+        clearTimeout(timeoutId);
         setLoading(false);
       });
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, []);
 
   if (loading) {

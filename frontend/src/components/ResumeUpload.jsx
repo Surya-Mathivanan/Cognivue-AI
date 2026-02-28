@@ -42,7 +42,7 @@ function ResumeUpload({ setCurrentView, setInterviewData }) {
     formData.append('resume', selectedFile);
 
     try {
-      const response = await fetch(getApiUrl('/api/upload-resume'), {
+      const response = await fetch(getApiUrl('/api/upload-resume/'), {
         method: 'POST',
         credentials: 'include',
         body: formData

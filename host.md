@@ -1,157 +1,107 @@
-# Step-by-Step Guide to Host Backend on Render and Frontend on Vercel
+# Cognivue AI — How to Run
 
-This guide provides clear, detailed instructions to deploy your full-stack application: Python Flask backend on Render and React frontend on Vercel.
+## Development Setup
 
-## Prerequisites for Both Deployments
-- GitHub account with your project repository pushed (public or private).
-- Render account: Sign up at [render.com](https://render.com).
-- Vercel account: Sign up at [vercel.com](https://vercel.com).
-- Ensure your project has `requirements.txt` in the root and `package.json` in the `frontend/` directory.
+### Backend (Django)
 
-## Part 1: Prepare Your Code for Deployment
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
 
-### Backend Preparation (Python Flask)
-1. **Update `backend/app.py` for Port Handling**:
-   - Render provides a dynamic PORT environment variable.
-   - Change the last lines of `backend/app.py` from:
-     ```python
-     if __name__ == '__main__':
-         with app.app_context():
-             db.create_all()
-         app.run(host='0.0.0.0', port=5000, debug=True)
-     ```
-     To:
-     ```python
-     if __name__ == '__main__':
-         with app.app_context():
-             db.create_all()
-         port = int(os.environ.get('PORT', 5000))
-         app.run(host='0.0.0.0', port=port, debug=False)
-     ```
-   - This ensures the app runs on Render's assigned port.
+# 2. Navigate to the Django project root
+cd backend
 
-2. **Update CORS Origins**:
-   - In `backend/app.py`, change the CORS line from:
-     ```python
-     CORS(app, supports_credentials=True, origins=['http://localhost:3000'])
-     ```
-     To:
-     ```python
-     CORS(app, supports_credentials=True, origins=['http://localhost:3000', 'https://your-frontend.vercel.app'])
-     ```
-     Replace `https://your-frontend.vercel.app` with your actual Vercel domain later.
+# 3. Run database migrations
+#    Use settings_local for local dev (SQLite — no Postgres required)
+python manage.py makemigrations
+python manage.py migrate --settings=cognivue.settings_local
 
-3. **Environment Variables**:
-   - Ensure your `.env` file includes all necessary keys (e.g., `GEMINI_API_KEY`, `DATABASE_URL`, `SESSION_SECRET`).
-   - For production, use Render's environment variables instead of `.env`.
+# 4. (Optional) Create a Django superuser for the admin panel
+python manage.py createsuperuser --settings=cognivue.settings_local
 
-### Frontend Preparation (React/Vite)
-1. **Update API Base URL**:
-   - In `frontend/src/api.js`, change the base URL from localhost to your Render backend URL.
-   - Example: Change `http://localhost:5000` to `https://your-backend.onrender.com`.
+# 5. Start the Django dev server (SQLite locally)
+python manage.py runserver --settings=cognivue.settings_local
+# Runs on http://localhost:8000
 
-2. **Build Configuration**:
-   - Ensure `frontend/vite.config.js` is set up correctly for production builds.
+# --- OR, to use the real PostgreSQL (Render) ---
+python manage.py runserver
+```
 
-## Part 2: Deploy Backend on Render
+### Frontend (React + Vite)
 
-1. **Log in to Render**:
-   - Go to [render.com](https://render.com) and sign in.
+```bash
+# In a separate terminal
+cd frontend
 
-2. **Connect GitHub Repository**:
-   - Click "New" in the top right > "Web Service".
-   - Connect your GitHub account and select your repository.
+npm install
+npm run dev
+# Runs on http://localhost:3000
+```
 
-3. **Configure Web Service**:
-   - **Name**: Choose a name for your service (e.g., "cognivue-backend").
-   - **Branch**: Select "main" or your deployment branch.
-   - **Runtime**: Python 3.
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `python backend/app.py`
+---
 
-4. **Set Environment Variables**:
-   - In the "Environment" section, add:
-     - `GEMINI_API_KEY`: Your Gemini API key.
-     - `DATABASE_URL`: For production database (Render provides PostgreSQL free tier).
-     - `SESSION_SECRET`: A secure random string.
-     - Any other required variables from your `.env`.
+## ⚠️ Google OAuth Setup (Required)
 
-5. **Advanced Settings** (Optional):
-   - **Health Check Path**: `/api/health`
-   - **Instance Type**: Free tier is fine for starters.
+Before the Google login button will work, you need to update your OAuth credentials in the Google Cloud Console:
 
-6. **Deploy**:
-   - Click "Create Web Service".
-   - Wait for the build and deployment to complete (may take 5-10 minutes).
-   - Once deployed, note the service URL (e.g., `https://cognivue-backend.onrender.com`).
+1. Go to [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
+2. Select your OAuth 2.0 Client ID
+3. Under **"Authorized redirect URIs"**, add:
+   ```
+   http://localhost:8000/auth/google/callback/
+   ```
+   *(Note: port changed from 5000 → 8000, and Django requires a trailing slash)*
 
-## Part 3: Deploy Frontend on Vercel
+---
 
-1. **Log in to Vercel**:
-   - Go to [vercel.com](https://vercel.com) and sign in.
+## Production Build
 
-2. **Import Project**:
-   - Click "New Project".
-   - Connect your GitHub account and select your repository.
+```bash
+# Build frontend
+cd frontend
+npm run build
 
-3. **Configure Project Settings**:
-   - **Framework Preset**: Vite.
-   - **Root Directory**: `frontend`.
-   - **Build Command**: `npm run build`.
-   - **Output Directory**: `dist`.
-   - **Install Command**: `npm install`.
+# Serve everything from Django (static + React SPA)
+cd ../backend
+python manage.py collectstatic --noinput
+gunicorn cognivue.wsgi:application --bind 0.0.0.0:8000
+```
 
-4. **Environment Variables** (if needed):
-   - Add any frontend-specific variables (rarely needed for this setup).
+---
 
-5. **Deploy**:
-   - Click "Deploy".
-   - Vercel will build and deploy your frontend.
-   - Note the deployment URL (e.g., `https://cognivue-frontend.vercel.app`).
+## Key URL Changes (Flask → Django)
 
-## Part 4: Post-Deployment Configuration
+| Flask (old)                          | Django (new)                              |
+|--------------------------------------|-------------------------------------------|
+| `http://localhost:5000`              | `http://localhost:8000`                  |
+| `/auth/google`                       | `/auth/google/`                          |
+| `/auth/google/callback`              | `/auth/google/callback/`                 |
+| `/api/upload-resume`                 | `/api/upload-resume/`                    |
+| `/api/generate-questions`            | `/api/generate-questions/`               |
+| All API routes (no trailing slash)   | All API routes (trailing slash required) |
 
-1. **Update Backend CORS**:
-   - Go back to Render dashboard.
-   - Update the CORS origins in `backend/app.py` with your actual Vercel URL.
-   - Redeploy the backend.
+---
 
-2. **Update Frontend API URL**:
-   - If not done earlier, update `frontend/src/api.js` with the Render backend URL.
-   - Redeploy the frontend on Vercel.
+## New Features (Django migration additions)
 
-3. **Test the Application**:
-   - Visit your Vercel frontend URL.
-   - Test login, resume upload, and interview features.
-   - Ensure API calls work (check browser console for errors).
+- **Session History** — `/api/session-history/` — lists all completed sessions
+- **Session Detail** — `/api/session/<id>/` — full Q&A + feedback for a session
+- **User Analytics** — `/api/analytics/` — average score, best score, counts by mode
+- **Django Admin** — `http://localhost:8000/admin/` — manage users and sessions
+- **Loading animation bug fixed** — 8-second timeout prevents spinner from hanging
 
-## Troubleshooting
+---
 
-- **Backend Deployment Issues**:
-  - Check Render logs for errors.
-  - Ensure all dependencies are in `requirements.txt`.
-  - Verify environment variables are set correctly.
+## Environment Variables (`.env`)
 
-- **Frontend Deployment Issues**:
-  - Check Vercel build logs.
-  - Ensure `frontend/package.json` has correct scripts.
-
-- **CORS Errors**:
-  - Double-check CORS origins in backend.
-  - Ensure frontend API calls use HTTPS in production.
-
-- **Database Issues**:
-  - For production, use Render's PostgreSQL database.
-  - Update `DATABASE_URL` in Render environment variables.
-
-## Costs
-- **Render**: Free tier includes 750 hours/month, 1GB storage.
-- **Vercel**: Free tier with generous limits.
-- Monitor usage to avoid unexpected charges.
-
-## Final Notes
-- Both platforms support automatic deployments on GitHub pushes.
-- Keep your repository updated with deployment-ready code.
-- For production databases, consider upgrading from free tiers as needed.
-
-If you encounter issues, check the platform documentation or logs for detailed error messages.
+```env
+SESSION_SECRET=your-secret-key
+DATABASE_URL=postgresql://...   # or leave blank for SQLite
+GOOGLE_OAUTH_CLIENT_ID=...
+GOOGLE_OAUTH_CLIENT_SECRET=...
+GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback/
+GEMINI_API_KEY=...
+FRONTEND_URL=http://localhost:3000
+CORS_ORIGINS=http://localhost:3000
+VITE_API_BASE_URL=http://localhost:8000
+```

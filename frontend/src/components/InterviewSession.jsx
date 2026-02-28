@@ -93,7 +93,7 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
 
   const generateQuestions = async () => {
     try {
-      const response = await fetch(getApiUrl('/api/generate-questions'), {
+      const response = await fetch(getApiUrl('/api/generate-questions/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -118,19 +118,25 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
 
   const getAllQuestions = (questionData) => {
     const allQuestions = [];
-    
+
     questionData.hr_questions?.forEach(q => {
       allQuestions.push({ category: 'HR', text: q });
     });
-    
+
     questionData.technical_questions?.forEach(q => {
       allQuestions.push({ category: 'Technical', text: q });
     });
-    
+
+    // cultural_questions used in role-based mode
     questionData.cultural_questions?.forEach(q => {
       allQuestions.push({ category: 'Cultural Fit', text: q });
     });
-    
+
+    // project_questions used in resume-based mode (was previously dropped — BUG FIX)
+    questionData.project_questions?.forEach(q => {
+      allQuestions.push({ category: 'Project', text: q });
+    });
+
     return allQuestions;
   };
 
@@ -142,7 +148,7 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
 
     // Save answer to backend
     try {
-      await fetch(getApiUrl('/api/submit-answer'), {
+      await fetch(getApiUrl('/api/submit-answer/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -174,7 +180,7 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
   const completeInterview = async () => {
     setLoading(true);
     try {
-      const response = await fetch(getApiUrl('/api/complete-interview'), {
+      const response = await fetch(getApiUrl('/api/complete-interview/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

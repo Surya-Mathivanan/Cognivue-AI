@@ -4,7 +4,7 @@ import { API_BASE_URL } from "../api";
 
 function LoginScreen({ setUser, theme = "dark", toggleTheme }) {
   const handleGoogleLogin = () => {
-    window.location.href = `${API_BASE_URL}/auth/google`;
+    window.location.href = `${API_BASE_URL}/auth/google/`;
   };
 
   return (

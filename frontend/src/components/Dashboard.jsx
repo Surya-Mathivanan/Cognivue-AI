@@ -3,6 +3,7 @@ import ResumeUpload from './ResumeUpload';
 import RoleSelection from './RoleSelection';
 import InterviewSession from './InterviewSession';
 import FeedbackDashboard from './FeedbackDashboard';
+import SessionHistory from './SessionHistory';
 import { getApiUrl } from '../api';
 
 function Dashboard({ user, setUser, theme, toggleTheme }) {
@@ -13,7 +14,7 @@ function Dashboard({ user, setUser, theme, toggleTheme }) {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch(getApiUrl('/api/logout'), {
+      const response = await fetch(getApiUrl('/api/logout/'), {
         method: 'POST',
         credentials: 'include'
       });
@@ -87,6 +88,9 @@ function Dashboard({ user, setUser, theme, toggleTheme }) {
       case 'feedback':
         return <FeedbackDashboard feedbackData={feedbackData} setCurrentView={setCurrentView} />;
 
+      case 'history':
+        return <SessionHistory setCurrentView={setCurrentView} setFeedbackData={setFeedbackData} />;
+
       default:
         return <div>Unknown view</div>;
     }
@@ -147,6 +151,17 @@ function Dashboard({ user, setUser, theme, toggleTheme }) {
               <circle cx="12" cy="12" r="2"/>
             </svg>
             <span>Role Interview</span>
+          </button>
+
+          <button
+            className={`nav-item ${currentView === 'history' ? 'active' : ''}`}
+            onClick={() => navigateTo('history')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 8v4l3 3"/>
+              <circle cx="12" cy="12" r="10"/>
+            </svg>
+            <span>History</span>
           </button>
         </nav>
 
