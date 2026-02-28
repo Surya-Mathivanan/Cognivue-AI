@@ -11,7 +11,7 @@ from pydantic import BaseModel
 # Follow these instructions when using this blueprint:
 # - Note that the newest Gemini model series is "gemini-2.5-flash" or gemini-2.5-pro"
 #   - do not change this unless explicitly requested by the user
-# - Sometimes the google genai SDK has occasional type errors. You might need to run to validate, at time.  
+# - Sometimes the google genai SDK has occasional type errors. You might need to run to validate, at time.
 # The SDK was recently renamed from google-generativeai to google-genai. This file reflects the new name and the new APIs.
 
 # This API key is from Gemini Developer API Key, not vertex AI API Key
@@ -20,10 +20,7 @@ client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY", "test-api-key"))
 
 def summarize_article(text: str) -> str:
     prompt = f"Please summarize the following text concisely while maintaining key points:\n\n{text}"
-
-    response = client.models.generate_content(model="gemini-2.5-flash",
-                                              contents=prompt)
-
+    response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
     return response.text or "SOMETHING WENT WRONG"
 
 
@@ -72,15 +69,10 @@ def analyze_image(jpeg_image_path: str) -> str:
         response = client.models.generate_content(
             model="gemini-2.5-pro",
             contents=[
-                types.Part.from_bytes(
-                    data=image_bytes,
-                    mime_type="image/jpeg",
-                ),
-                "Analyze this image in detail and describe its key " +
-                "elements, context, and any notable aspects.",
+                types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+                "Analyze this image in detail and describe its key elements, context, and any notable aspects.",
             ],
         )
-
     return response.text if response.text else ""
 
 
@@ -90,15 +82,10 @@ def analyze_video(mp4_video_path: str) -> str:
         response = client.models.generate_content(
             model="gemini-2.5-pro",
             contents=[
-                types.Part.from_bytes(
-                    data=video_bytes,
-                    mime_type="video/mp4",
-                ),
-                "Analyze this video in detail and describe its key " +
-                "elements, context, and any notable aspects.",
+                types.Part.from_bytes(data=video_bytes, mime_type="video/mp4"),
+                "Analyze this video in detail and describe its key elements, context, and any notable aspects.",
             ],
         )
-
     return response.text if response.text else ""
 
 
@@ -107,8 +94,7 @@ def generate_image(prompt: str, image_path: str) -> None:
         # IMPORTANT: only this gemini model supports image generation
         model="gemini-2.0-flash-preview-image-generation",
         contents=prompt,
-        config=types.GenerateContentConfig(
-            response_modalities=['TEXT', 'IMAGE']))
+        config=types.GenerateContentConfig(response_modalities=['TEXT', 'IMAGE']))
 
     if not response.candidates:
         return
