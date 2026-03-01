@@ -50,7 +50,7 @@ Before the Google login button will work, you need to update your OAuth credenti
    ```
    http://localhost:8000/auth/google/callback/
    ```
-   *(Note: port changed from 5000 → 8000, and Django requires a trailing slash)*
+   _(Note: port changed from 5000 → 8000, and Django requires a trailing slash)_
 
 ---
 
@@ -71,14 +71,14 @@ gunicorn cognivue.wsgi:application --bind 0.0.0.0:8000
 
 ## Key URL Changes (Flask → Django)
 
-| Flask (old)                          | Django (new)                              |
-|--------------------------------------|-------------------------------------------|
-| `http://localhost:5000`              | `http://localhost:8000`                  |
-| `/auth/google`                       | `/auth/google/`                          |
-| `/auth/google/callback`              | `/auth/google/callback/`                 |
-| `/api/upload-resume`                 | `/api/upload-resume/`                    |
-| `/api/generate-questions`            | `/api/generate-questions/`               |
-| All API routes (no trailing slash)   | All API routes (trailing slash required) |
+| Flask (old)                        | Django (new)                             |
+| ---------------------------------- | ---------------------------------------- |
+| `http://localhost:5000`            | `http://localhost:8000`                  |
+| `/auth/google`                     | `/auth/google/`                          |
+| `/auth/google/callback`            | `/auth/google/callback/`                 |
+| `/api/upload-resume`               | `/api/upload-resume/`                    |
+| `/api/generate-questions`          | `/api/generate-questions/`               |
+| All API routes (no trailing slash) | All API routes (trailing slash required) |
 
 ---
 
@@ -105,3 +105,34 @@ FRONTEND_URL=http://localhost:3000
 CORS_ORIGINS=http://localhost:3000
 VITE_API_BASE_URL=http://localhost:8000
 ```
+
+---
+
+## Render Deployment
+
+### Required Environment Variables on Render:
+
+| Variable                     | Value                                                 | Description                     |
+| ---------------------------- | ----------------------------------------------------- | ------------------------------- |
+| `SESSION_SECRET`             | Generate a secure random string                       | Used for session encryption     |
+| `DATABASE_URL`               | PostgreSQL connection string from Render              | Database credentials            |
+| `GOOGLE_OAUTH_CLIENT_ID`     | From Google Cloud Console                             | OAuth client ID                 |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | From Google Cloud Console                             | OAuth client secret             |
+| `GOOGLE_REDIRECT_URI`        | `https://your-app.onrender.com/auth/google/callback/` | Must match Google Console       |
+| `GEMINI_API_KEY`             | From Google AI Studio                                 | For AI features                 |
+| `FRONTEND_URL`               | `https://your-app.onrender.com`                       | Your Render URL                 |
+| `CORS_ORIGINS`               | `https://your-app.onrender.com`                       | Your Render URL                 |
+| `VITE_API_BASE_URL`          | (empty)                                               | Use relative URLs in production |
+
+### Google OAuth Setup for Production:
+
+1. Go to [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
+2. Select your OAuth 2.0 Client ID
+3. Under **"Authorized redirect URIs"**, add:
+   ```
+   https://your-app-name.onrender.com/auth/google/callback/
+   ```
+4. Under **"Authorized JavaScript origins"**, add:
+   ```
+   https://your-app-name.onrender.com
+   ```
