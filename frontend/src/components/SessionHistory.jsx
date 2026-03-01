@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import LoadingAnimation from './LoadingAnimation';
+import Loader from './Loader';
 import { getApiUrl } from '../api';
 
-function SessionHistory({ setCurrentView, setFeedbackData }) {
+function SessionHistory({ setCurrentView, setFeedbackData, onViewFullDetails }) {
   const [sessions, setSessions] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState(null);
   const [sessionDetail, setSessionDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -85,8 +88,8 @@ function SessionHistory({ setCurrentView, setFeedbackData }) {
 
   if (loading) {
     return (
-      <div className="dashboard-main">
-        <LoadingAnimation message="Loading your interview history..." size="large" />
+      <div className="dashboard-main" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <Loader />
       </div>
     );
   }
@@ -130,31 +133,30 @@ function SessionHistory({ setCurrentView, setFeedbackData }) {
 
       {/* Session List */}
       {sessions.length === 0 ? (
-        <div className="empty-history">
-          <div className="empty-icon">📋</div>
-          <h3>No completed interviews yet</h3>
-          <p>Complete your first interview to see your history here.</p>
-          <button className="btn btn-primary gradient-btn" onClick={() => setCurrentView('mode-selection')}>
-            Start Interview
-          </button>
+        <div className="dashboard-main" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}>
+          <Loader />
         </div>
       ) : (
         <div className="history-layout">
           {/* Session Cards */}
-          <div className="history-list">
-            {sessions.map((session) => (
-              <div
+          <div className="history-list-container">
+            <div className="history-list">
+              {sessions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((session) => (
+                <div
                 key={session.id}
                 className={`history-card ${selectedSession === session.id ? 'selected' : ''}`}
                 onClick={() => loadSessionDetail(session.id)}
               >
-                <div className="history-card-header">
+              <div className="history-card-header">
                   <div className="history-mode-badge" style={{ borderColor: getDifficultyColor(session.difficulty) }}>
                     {session.mode === 'resume' ? '📄 Resume' : '🎯 Role'}
                   </div>
                   {session.overall_score != null && (
-                    <div className="history-score" style={{ color: getScoreColor(session.overall_score) }}>
-                      {session.overall_score}%
+                    <div className="history-total-score" style={{ background: `${getScoreColor(session.overall_score)}18`, borderColor: getScoreColor(session.overall_score) }}>
+                      <span className="total-score-label">Total Score</span>
+                      <span className="total-score-value" style={{ color: getScoreColor(session.overall_score) }}>
+                        {session.overall_score}%
+                      </span>
                     </div>
                   )}
                 </div>
@@ -180,8 +182,40 @@ function SessionHistory({ setCurrentView, setFeedbackData }) {
                     <span className="preview-text">{session.feedback_summary.strengths[0]}</span>
                   </div>
                 )}
+
+                <button
+                  className="history-view-details-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewFullDetails(session.id);
+                  }}
+                >
+                  View Full Details →
+                </button>
               </div>
             ))}
+            </div>
+            
+            {/* Pagination Controls */}
+            {Math.ceil(sessions.length / itemsPerPage) > 1 && (
+              <div className="history-pagination">
+                <button 
+                  className="page-btn" 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                >
+                  Previous
+                </button>
+                <span className="page-info">{currentPage} / {Math.ceil(sessions.length / itemsPerPage)}</span>
+                <button 
+                  className="page-btn" 
+                  disabled={currentPage === Math.ceil(sessions.length / itemsPerPage)}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Session Detail */}
