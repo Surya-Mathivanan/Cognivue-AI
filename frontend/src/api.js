@@ -1,5 +1,5 @@
-// API configuration - use relative URL in production (served by Django)
-// For local dev, set VITE_API_BASE_URL=http://localhost:8000
+// API configuration for Vercel frontend + Render backend
+// Set VITE_API_BASE_URL in Vercel project settings to your Render backend URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 // Helper function to get full API URL

@@ -108,21 +108,30 @@ VITE_API_BASE_URL=http://localhost:8000
 
 ---
 
-## Render Deployment
+## Vercel + Render Deployment (Your Setup)
 
-### Required Environment Variables on Render:
+Your frontend is on **Vercel** (https://cognivue-aii.vercel.app/) and backend on **Render**.
 
-| Variable                     | Value                                                 | Description                     |
-| ---------------------------- | ----------------------------------------------------- | ------------------------------- |
-| `SESSION_SECRET`             | Generate a secure random string                       | Used for session encryption     |
-| `DATABASE_URL`               | PostgreSQL connection string from Render              | Database credentials            |
-| `GOOGLE_OAUTH_CLIENT_ID`     | From Google Cloud Console                             | OAuth client ID                 |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | From Google Cloud Console                             | OAuth client secret             |
-| `GOOGLE_REDIRECT_URI`        | `https://your-app.onrender.com/auth/google/callback/` | Must match Google Console       |
-| `GEMINI_API_KEY`             | From Google AI Studio                                 | For AI features                 |
-| `FRONTEND_URL`               | `https://your-app.onrender.com`                       | Your Render URL                 |
-| `CORS_ORIGINS`               | `https://your-app.onrender.com`                       | Your Render URL                 |
-| `VITE_API_BASE_URL`          | (empty)                                               | Use relative URLs in production |
+### Vercel Configuration:
+
+1. Go to your Vercel project Settings → Environment Variables
+2. Add variable:
+   - **Name**: `VITE_API_BASE_URL`
+   - **Value**: Your Render backend URL (e.g., `https://cognivue-aii-backend.onrender.com`)
+3. Redeploy the frontend
+
+### Render Environment Variables:
+
+| Variable                     | Value                                                             | Description                 |
+| ---------------------------- | ----------------------------------------------------------------- | --------------------------- |
+| `SESSION_SECRET`             | Generate a secure random string                                   | Used for session encryption |
+| `DATABASE_URL`               | PostgreSQL connection string from Render                          | Database credentials        |
+| `GOOGLE_OAUTH_CLIENT_ID`     | From Google Cloud Console                                         | OAuth client ID             |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | From Google Cloud Console                                         | OAuth client secret         |
+| `GOOGLE_REDIRECT_URI`        | `https://cognivue-aii-backend.onrender.com/auth/google/callback/` | Must match Google Console   |
+| `GEMINI_API_KEY`             | From Google AI Studio                                             | For AI features             |
+| `FRONTEND_URL`               | `https://cognivue-aii.vercel.app`                                 | Your Vercel URL             |
+| `CORS_ORIGINS`               | `https://cognivue-aii.vercel.app`                                 | Your Vercel URL             |
 
 ### Google OAuth Setup for Production:
 
@@ -130,9 +139,9 @@ VITE_API_BASE_URL=http://localhost:8000
 2. Select your OAuth 2.0 Client ID
 3. Under **"Authorized redirect URIs"**, add:
    ```
-   https://your-app-name.onrender.com/auth/google/callback/
+   https://cognivue-aii-backend.onrender.com/auth/google/callback/
    ```
 4. Under **"Authorized JavaScript origins"**, add:
    ```
-   https://your-app-name.onrender.com
+   https://cognivue-aii.vercel.app
    ```

@@ -61,6 +61,7 @@ def user_info(request):
 
 
 # ─── Logout ───────────────────────────────────────────────────────────────────
+@csrf_exempt
 @api_login_required
 @require_http_methods(['POST'])
 def logout_view(request):
