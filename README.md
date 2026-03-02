@@ -1,1162 +1,1100 @@
-# 🎯 Cognivue AI
+# 🎯 Cognivue AI - Complete Technical Documentation
 
 ## 📋 Table of Contents
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Technology Stack](#technology-stack)
-- [System Architecture](#system-architecture)
-- [Prerequisites](#prerequisites)
-- [Installation & Setup](#installation--setup)
-- [How to Run](#how-to-run)
-- [Project Structure](#project-structure)
-- [Core Components Explained](#core-components-explained)
-- [Why We Use These Technologies](#why-we-use-these-technologies)
-- [Database Configuration](#database-configuration)
-- [API Documentation](#api-documentation)
-- [Troubleshooting](#troubleshooting)
-- [Future Enhancements](#future-enhancements)
+1. [Overview](#overview)
+2. [System Architecture](#system-architecture)
+3. [Technology Stack Deep Dive](#technology-stack-deep-dive)
+4. [Database Design & Rationale](#database-design--rationale)
+5. [Backend Implementation](#backend-implementation)
+6. [Frontend Implementation](#frontend-implementation)
+7. [AI/ML Components](#aiml-components)
+8. [API Documentation](#api-documentation)
+9. [Authentication Flow](#authentication-flow)
+10. [Interview Flow](#interview-flow)
+11. [Deployment Guide](#deployment-guide)
+12. [Environment Variables](#environment-variables)
 
 ---
 
-## 🌟 Overview
+## Overview
 
+### What is Cognivue AI?
 
-Cognivue AI
+**Cognivue AI** is an intelligent, full-stack web application designed to revolutionize interview preparation for students, freshers, and job seekers. The application leverages Google Gemini AI to provide personalized, context-aware interview practice with real-time feedback.
 
-Tagline suggestion:
-"Practice. Improve. Get Hired — Smarter with AI."
+### Problem Statement
 
-**Cognivue AI** is an intelligent, full-stack web application designed to revolutionize interview preparation for students, freshers, and job seekers. By leveraging cutting-edge AI technology (Google Gemini AI), this application provides personalized, context-aware interview practice with real-time feedback.
+Traditional interview preparation faces several critical challenges:
 
-### What Problem Does It Solve?
-- **Limited Interview Practice**: Traditional interview preparation lacks personalized, realistic practice opportunities
-- **Generic Questions**: Most interview prep tools provide one-size-fits-all questions
-- **No Instant Feedback**: Students don't receive immediate, constructive feedback on their responses
-- **Resume-Skill Mismatch**: Interview questions often don't align with skills listed on resumes
+1. **Limited Personalized Practice**: Most platforms provide generic questions that don't match the candidate's actual skills or experience
+2. **No Context Awareness**: Interview questions rarely align with the specific technologies listed on a candidate's resume
+3. **Delayed Feedback**: Students don't receive immediate, actionable feedback on their responses
+4. **Skill-Job Mismatch**: Questions don't target the actual skills needed for specific job roles
 
-### How Does It Work?
-1. **User Authentication**: Secure Google OAuth login
-2. **Two Interview Modes**:
-   - **Resume-Based**: Upload your PDF resume → AI analyzes skills → Generates tailored questions
-   - **Role-Based**: Select a job role → AI generates industry-specific questions
-3. **Interactive Interview**: Answer questions via text input
-4. **AI Evaluation**: Google Gemini AI evaluates responses and provides detailed feedback
-5. **Performance Tracking**: View comprehensive feedback and improvement suggestions
+### Solution Approach
 
----
+Cognivue AI solves these problems through:
 
-## 🚀 Key Features
-
-### 1. **Intelligent Resume Analysis**
-- PDF resume parsing and content extraction
-- AI-powered skill identification (technical & soft skills)
-- Project and experience level detection
-- Keyword extraction for targeted questioning
-
-### 2. **Dual Interview Modes**
-- **Resume-Based Interview**: Questions tailored to YOUR specific skills and experience
-- **Role-Based Interview**: Industry-specific questions for predefined roles (Software Engineer, Data Scientist, etc.)
-
-### 3. **Difficulty Levels**
-- **Beginner**: Entry-level questions for freshers
-- **Intermediate**: Mid-level complexity for 1-3 years experience
-- **Advanced**: Senior-level questions for experienced professionals
-
-### 4. **AI-Powered Feedback**
-- Comprehensive response evaluation
-- Strengths and areas for improvement
-- Sentiment analysis and confidence scoring
-- Category-wise performance metrics (technical accuracy, communication, problem-solving)
-
-### 5. **Secure Authentication**
-- Google OAuth 2.0 integration
-- Session management with Flask-Login
-- User-specific data isolation
-
-### 6. **Modern UI/UX**
-- Responsive design with gradient aesthetics
-- Interactive animations and loading states
-- Clean, professional interface
-- Mobile-friendly layout
+1. **Resume Analysis**: AI extracts technical skills, soft skills, and projects from uploaded PDF resumes
+2. **Dual Interview Modes**: 
+   - Resume-based mode for personalized questions
+   - Role-based mode for industry-specific preparation
+3. **Real-time AI Evaluation**: Google Gemini evaluates answers instantly with detailed feedback
+4. **Progress Tracking**: Historical session data helps users track improvement over time
 
 ---
 
-## 💻 Technology Stack
+## System Architecture
 
-### Frontend
-- **React 19.1.1**: Modern, component-based UI framework
-- **Vite**: Lightning-fast build tool and development server
-- **React Router DOM**: Client-side routing for single-page application
-- **Custom CSS**: Handcrafted styling with gradients and animations
+### High-Level Architecture Diagram
 
-### Backend
-- **Python 3.11+**: Core backend language
-- **Flask**: Lightweight, flexible web framework
-- **Flask-SQLAlchemy**: ORM for database operations
-- **Flask-Login**: User session management
-- **Flask-CORS**: Cross-origin resource sharing for API calls
-
-### AI & Machine Learning
-- **Google Gemini AI (2.5 Flash/Pro)**: Advanced language model for:
-  - Question generation
-  - Resume analysis
-  - Response evaluation
-  - Feedback generation
-- **Pydantic**: Data validation and structured AI responses
-
-### Database
-- **SQLite** (Development): Lightweight, file-based database
-- **PostgreSQL** (Production): Robust, scalable relational database
-- **SQLAlchemy ORM**: Database abstraction layer
-
-### Authentication
-- **Google OAuth 2.0**: Secure, industry-standard authentication
-- **oauthlib**: OAuth client implementation
-
-### File Handling
-- **PyPDF2/pdfplumber**: PDF parsing and text extraction
-- **Werkzeug**: Secure filename handling
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              CLIENT LAYER                                    │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐             │
+│  │   Login Screen  │  │    Dashboard    │  │ Interview View  │             │
+│  │   (OAuth 2.0)   │  │  (Mode Select)  │  │  (QA + Feedback)│             │
+│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘             │
+│           │                    │                    │                       │
+│           └────────────────────┴────────────────────┘                       │
+│                              React + Vite                                    │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     │ HTTPS/JSON
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           API LAYER (Django)                                 │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                         Django REST Endpoints                        │    │
+│  │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────┐ │    │
+│  │  │    Auth      │ │   Upload     │ │  Questions   │ │  Feedback  │ │    │
+│  │  │   (/auth/)   │ │  (/api/)     │ │   (/api/)    │ │  (/api/)   │ │    │
+│  │  └──────┬───────┘ └──────┬───────┘ └──────┬───────┘ └─────┬──────┘ │    │
+│  └─────────┼────────────────┼────────────────┼───────────────┼────────┘    │
+│            │                │                │               │              │
+│  ┌─────────┴────────────────┴────────────────┴───────────────┴────────┐    │
+│  │                      Core Business Logic                            │    │
+│  │  ┌────────────────┐ ┌──────────────────┐ ┌──────────────────────┐  │    │
+│  │  │Resume Analyzer │ │Question Generator│ │ Feedback Generator   │  │    │
+│  │  │ (pdfplumber +  │ │   (Gemini AI)    │ │    (Gemini AI)       │  │    │
+│  │  │  pattern match)│ │                  │ │                      │  │    │
+│  │  └────────────────┘ └──────────────────┘ └──────────────────────┘  │    │
+│  └────────────────────────────────────────────────────────────────────┘    │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         DATABASE LAYER                                       │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐             │
+│  │   accounts_user │  │interviews_session│  │django_session   │             │
+│  │   (User Data)   │  │ (Interview Data) │  │ (Auth Sessions) │             │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘             │
+│                          PostgreSQL / SQLite                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     ▲
+                                     │ API Calls
+┌────────────────────────────────────┴────────────────────────────────────────┐
+│                         AI LAYER (Google Gemini)                             │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐             │
+│  │  Resume Parsing │  │ Question Gen    │  │ Answer Eval     │             │
+│  │  (Skill Extract)│  │ (Context-aware) │  │ (Feedback Gen)  │             │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 📸 Application Screenshots
+## Technology Stack Deep Dive
 
-### 🔐 Login Page
-![Login Page](Images/login%20page.png)
+### Why Django Instead of Flask?
 
-### 🏠 Home Page
-![Home Page](Images/home%20page%20white.png)
+The original project specification mentioned Flask, but the implementation uses Django. Here's why:
 
-### 🎯 Role Selection
-![Role Selection](Images/role%20upload%20page.png)
+| Aspect | Django Advantage |
+|--------|------------------|
+| **ORM** | Built-in robust ORM vs SQLAlchemy setup required |
+| **Admin Interface** | Auto-generated admin panel for data management |
+| **Migrations** | Built-in database migration system |
+| **Security** | Built-in CSRF, XSS, SQL injection protection |
+| **Authentication** | Comprehensive auth system with session management |
+| **Scalability** | Battle-tested at scale (Instagram, Pinterest) |
 
-### 📄 Resume Upload
-![Resume Upload](Images/resume%20upload%20page.png)
+### Why React + Vite?
 
-### 🎙 Interview Answer Page
-![Interview Answer](Images/interview%20answer%20page.png)
+**React**:
+- Component-based architecture for maintainable UI
+- Large ecosystem and community support
+- Virtual DOM for efficient rendering
+- React hooks for state management
 
-### 📊 Dashboard
-![Dashboard1](Images/dashboard%201.png)
-![Dashboard2](Images/dashboard%202.png)
-![Dashboard3](Images/dashboard%203.png)
+**Vite**:
+- Lightning-fast HMR (Hot Module Replacement)
+- Out-of-the-box TypeScript support (though this project uses JSX)
+- Optimized production builds with Rollup
+- Native ES modules support
 
+### Why Google Gemini AI?
 
-## 🏗️ System Architecture
+1. **Advanced Reasoning**: Gemini 2.5 Pro/Flash offers state-of-the-art reasoning capabilities
+2. **Structured Output**: Native JSON schema support via `response_schema` parameter
+3. **Cost-Effective**: Competitive pricing compared to GPT-4
+4. **Multimodal**: Supports text, image, and video analysis (future extensibility)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      USER INTERFACE                         │
-│         (React Frontend - Port 3000/5000)                   │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
-│  │  Login   │  │  Resume  │  │Interview │  │ Feedback │  │
-│  │  Screen  │  │  Upload  │  │ Session  │  │Dashboard │  │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │
-└────────────────────────┬────────────────────────────────────┘
-                         │ HTTP/REST API
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│               BACKEND API LAYER (Flask)                     │
-│                    (Port 5000)                              │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │  Authentication Routes  │  Interview Routes          │  │
-│  │  - Google OAuth Login   │  - Upload Resume           │  │
-│  │  - Session Management   │  - Generate Questions      │  │
-│  │                         │  - Submit Answers          │  │
-│  │                         │  - Get Feedback            │  │
-│  └──────────────────────────────────────────────────────┘  │
-└────────────┬─────────────────────────┬──────────────────────┘
-             │                         │
-             ▼                         ▼
-┌───────────────────────┐   ┌──────────────────────────────┐
-│   DATABASE LAYER      │   │    AI SERVICES LAYER         │
-│   (SQLAlchemy ORM)    │   │   (Google Gemini AI)         │
-│                       │   │                              │
-│  ┌─────────────────┐ │   │  ┌────────────────────────┐ │
-│  │ User Model      │ │   │  │ Resume Analyzer        │ │
-│  │ - Profile Data  │ │   │  │ - Skill Extraction     │ │
-│  │ - OAuth Info    │ │   │  │ - Content Summarization│ │
-│  └─────────────────┘ │   │  └────────────────────────┘ │
-│                       │   │                              │
-│  ┌─────────────────┐ │   │  ┌────────────────────────┐ │
-│  │Interview Session│ │   │  │ Question Generator     │ │
-│  │ - Questions     │ │   │  │ - Context-Aware        │ │
-│  │ - Answers       │ │   │  │ - Difficulty Scaling   │ │
-│  │ - Feedback      │ │   │  └────────────────────────┘ │
-│  └─────────────────┘ │   │                              │
-│                       │   │  ┌────────────────────────┐ │
-│ SQLite/PostgreSQL    │   │  │ Response Evaluator     │ │
-│                       │   │  │ - Sentiment Analysis   │ │
-│                       │   │  │ - Scoring              │ │
-│                       │   │  │ - Feedback Generation  │ │
-│                       │   │  └────────────────────────┘ │
-└───────────────────────┘   └──────────────────────────────┘
-```
+### Why PostgreSQL for Production?
 
-### Data Flow
-
-1. **User Login** → Google OAuth → User record in database
-2. **Resume Upload** → PDF parsing → AI analysis → Skill extraction
-3. **Question Generation** → AI processes skills/role → Generates questions → Stored in session
-4. **Answer Submission** → User response → AI evaluation → Feedback generation
-5. **Feedback Display** → Retrieved from session → Formatted → Displayed to user
+1. **ACID Compliance**: Guarantees data integrity for critical interview data
+2. **JSON Support**: Native JSON/JSONB fields for flexible question/answer storage
+3. **Scalability**: Excellent performance with large datasets
+4. **Django Integration**: `dj-database-url` makes configuration seamless
 
 ---
 
-## 📦 Prerequisites
+## Database Design & Rationale
 
-Before setting up the project, ensure you have:
+### Entity Relationship Diagram
 
-### Required Software
-- **Python 3.11 or higher**
-  - Download: https://www.python.org/downloads/
-  - Verify: `python --version`
-  
-- **Node.js (version 16 or higher)**
-  - Download: https://nodejs.org/
-  - Verify: `node --version` and `npm --version`
+```
+┌─────────────────┐         ┌─────────────────────────┐
+│  accounts_user  │         │   interviews_session    │
+├─────────────────┤         ├─────────────────────────┤
+│ id (PK)         │◄────────┤ id (PK)                 │
+│ email (unique)  │    1:M  │ user_id (FK)            │
+│ username        │         │ mode                    │
+│ avatar_url      │         │ difficulty              │
+│ google_id       │         │ role                    │
+│ is_active       │         │ resume_filename         │
+│ date_joined     │         │ technical_skills (JSON) │
+└─────────────────┘         │ soft_skills (JSON)      │
+                            │ projects (JSON)         │
+                            │ questions (JSON)        │
+                            │ answers (JSON)          │
+                            │ feedback (JSON)         │
+                            │ status                  │
+                            │ created_at              │
+                            │ completed_at            │
+                            └─────────────────────────┘
+```
 
-- **Git** (for version control)
-  - Download: https://git-scm.com/downloads
+### Why Custom User Model?
 
-### Required API Keys & Credentials
+The [`accounts/models.py`](backend/accounts/models.py:1) defines a custom User model because:
 
-1. **Google Gemini AI API Key**
-   - Visit: https://ai.google.dev/
-   - Create a project and enable Gemini API
-   - Generate API key
+1. **Email as Primary Identifier**: Unlike Django's default username-based auth, this uses email (required for Google OAuth)
+2. **OAuth Support**: `avatar_url` and `google_id` store Google profile data
+3. **Future-Proofing**: Easy to add custom fields like `subscription_tier`, `interview_quota`, etc.
 
-2. **Google OAuth 2.0 Credentials**
-   - Visit: https://console.cloud.google.com/
-   - Create a new project or select existing one
-   - Enable Google+ API
-   - Create OAuth 2.0 Client ID (Web application)
-   - Add authorized redirect URIs:
-     - `http://localhost:5000/auth/callback`
-     - `http://localhost:3000/auth/callback` (for development)
-   - Note down Client ID and Client Secret
+```python
+class User(AbstractUser):
+    email = models.EmailField(unique=True)  # Primary identifier
+    username = models.CharField(blank=True)  # Display name (non-unique)
+    avatar_url = models.URLField(blank=True)  # Google profile picture
+    google_id = models.CharField(blank=True)  # OAuth subject ID
+    
+    USERNAME_FIELD = 'email'  # Login with email instead of username
+```
 
-### Optional
-- **uv** (Modern Python package manager - faster alternative to pip)
-  - Install: `pip install uv`
-  - Documentation: https://github.com/astral-sh/uv
+### Why JSON Fields for Session Data?
+
+The [`InterviewSession`](backend/interviews/models.py:6) model uses JSON fields for:
+- `technical_skills`: Array of extracted skills with categories
+- `soft_skills`: Soft skills with context
+- `projects`: Project details with technologies
+- `questions`: Generated questions categorized by type
+- `answers`: User's responses
+- `feedback`: AI-generated evaluation
+
+**Rationale**: Interview data is semi-structured and varies per session. JSON fields provide:
+1. **Flexibility**: Schema can evolve without migrations
+2. **Queryability**: Django's JSONField supports path lookups
+3. **Performance**: PostgreSQL's JSONB is indexed and optimized
+
+### Session State Management
+
+```python
+STATUS_CHOICES = [('active', 'Active'), ('completed', 'Completed')]
+```
+
+Sessions track state to:
+1. Allow users to resume incomplete interviews
+2. Prevent data loss on browser refresh
+3. Enable analytics on completion rates
 
 ---
 
-## 🛠️ Installation & Setup
+## Backend Implementation
 
-### Step 1: Clone the Repository
-```bash
-git clone <your-repository-url>
-cd Final_Year_Project
+### Application Structure
+
+```
+backend/
+├── cognivue/              # Project configuration
+│   ├── settings.py        # All settings with environment-based config
+│   ├── urls.py            # Root URL routing
+│   └── wsgi.py            # WSGI entry point
+├── accounts/              # Authentication app
+│   ├── models.py          # Custom User model
+│   ├── views.py           # Google OAuth handlers
+│   ├── urls.py            # Auth routes
+│   └── backends.py        # Email authentication backend
+├── interviews/            # Core interview functionality
+│   ├── models.py          # InterviewSession model
+│   ├── views.py           # API endpoints (18 endpoints)
+│   └── urls.py            # API route definitions
+└── core/                  # AI/ML modules
+    ├── gemini.py          # Gemini client wrapper
+    ├── resume_analyzer.py # Resume parsing logic
+    └── question_generator.py # Question generation
 ```
 
-### Step 2: Backend Setup
+### Authentication System
 
-#### 2.1 Create Virtual Environment (Recommended)
-```bash
-# Using venv
-python -m venv venv
+#### Why Google OAuth?
 
-# Activate on Windows
-venv\Scripts\activate
+1. **Security**: No password storage (reduces breach risk)
+2. **User Experience**: One-click login, no password to remember
+3. **Trust**: Users trust Google's security infrastructure
+4. **Profile Data**: Automatic access to name, email, avatar
 
-# Activate on Linux/Mac
-source venv/bin/activate
+#### OAuth Flow Implementation
+
+```python
+# Step 1: Initiate OAuth (accounts/views.py)
+class GoogleLoginView(View):
+    def get(self, request):
+        client = WebApplicationClient(GOOGLE_OAUTH_CLIENT_ID)
+        request_uri = client.prepare_request_uri(
+            auth_endpoint,
+            redirect_uri=GOOGLE_REDIRECT_URI,
+            scope=['openid', 'email', 'profile'],
+            prompt='select_account consent',  # Force account selection
+        )
+        return redirect(request_uri)
+
+# Step 2: Handle Callback (accounts/views.py)
+class GoogleCallbackView(View):
+    def get(self, request):
+        # Exchange code for tokens
+        # Fetch user info from Google
+        # Create or get user in database
+        # Log user in
 ```
 
-#### 2.2 Install Python Dependencies
+#### Session Configuration
 
-**Option A: Using uv (Faster)**
-```bash
-uv sync
+```python
+# settings.py - Secure session handling
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7   # 7 days
+SESSION_COOKIE_SAMESITE = 'Lax' if local else 'None'
+SESSION_COOKIE_SECURE = not local       # HTTPS only in production
+SESSION_COOKIE_HTTPONLY = True          # Prevent XSS access
 ```
 
-**Option B: Using pip**
-```bash
-pip install -r requirements.txt
-```
+**Why These Settings?**
+- **7-day expiry**: Balances security with user convenience
+- **SameSite**: 'None' for cross-domain deployment (frontend/backend on different domains)
+- **Secure**: Ensures cookies only sent over HTTPS in production
+- **HttpOnly**: Prevents JavaScript access to session cookie (XSS protection)
 
-**Key Python Packages Installed:**
-- `flask`: Web framework
-- `flask-sqlalchemy`: Database ORM
-- `flask-login`: Authentication
-- `flask-cors`: Cross-origin support
-- `google-generativeai`: Gemini AI SDK
-- `pydantic`: Data validation
-- `python-dotenv`: Environment variable management
-- `oauthlib`: OAuth 2.0 implementation
-- `PyPDF2` or `pdfplumber`: PDF parsing
+### Resume Analysis System
 
-#### 2.3 Configure Environment Variables
+#### The Challenge
 
-Create a `.env` file in the project root:
-```bash
-touch .env
-```
+Resume parsing is complex because:
+1. PDFs have varying structures (tables, columns, different fonts)
+2. Skills can be mentioned anywhere in the document
+3. Context matters ("Python" could be a skill or a course name)
 
-Add the following configuration:
-```env
-# Session Security
-SESSION_SECRET=your-random-secret-key-here-generate-a-long-secure-string
+#### Hybrid Approach
 
-# Google OAuth 2.0
-GOOGLE_OAUTH_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_OAUTH_CLIENT_SECRET=your-google-client-secret
+The [`ResumeAnalyzer`](backend/core/resume_analyzer.py:55) uses a **hybrid extraction strategy**:
 
-# Google Gemini AI
-GEMINI_API_KEY=your-gemini-api-key
+1. **Pattern Matching** (Fast, deterministic):
+   - Matches against 100+ predefined technical skills
+   - Uses word boundaries (`\bskill\b`) for accuracy
+   - Categorizes skills (programming, frameworks, databases, etc.)
 
-# Database (SQLite for development)
-DATABASE_URL=sqlite:///interview_assistant.db
+2. **LLM Extraction** (Intelligent, context-aware):
+   - Uses Gemini to understand context
+   - Extracts nuanced information (experience level, project details)
+   - Generates professional summary
 
-# Or PostgreSQL for production
-# DATABASE_URL=postgresql://username:password@localhost:5432/interview_assistant
-
-# Application URL (for OAuth redirects)
-REPLIT_DEV_DOMAIN=localhost:5000
-```
-
-**⚠️ Security Notes:**
-- Never commit `.env` file to version control
-- Add `.env` to `.gitignore`
-- Generate strong random strings for SESSION_SECRET
-- Keep API keys confidential
-
-#### 2.4 Initialize Database
-```bash
-# Run Flask shell to create database tables
-python
->>> from backend.app import app, db
->>> with app.app_context():
-...     db.create_all()
->>> exit()
-```
-
-### Step 3: Frontend Setup
-
-#### 3.1 Navigate to Frontend Directory
-```bash
-cd frontend
-```
-
-#### 3.2 Install Node Dependencies
-```bash
-npm install
-```
-
-**Key Packages Installed:**
-- `react` & `react-dom`: UI framework
-- `react-router-dom`: Client-side routing
-- `vite`: Build tool and dev server
-- `@vitejs/plugin-react`: React support for Vite
-
-#### 3.3 Configure Vite Port (Optional)
-
-Edit `frontend/vite.config.js`:
-```javascript
-export default {
-  server: {
-    port: 3000, // Change if needed
-    proxy: {
-      '/api': 'http://localhost:5000'
+```python
+class ResumeAnalyzer:
+    TECHNICAL_SKILLS = {
+        'programming_languages': ['python', 'java', 'javascript', ...],
+        'web_frameworks': ['react', 'angular', 'django', ...],
+        'databases': ['mysql', 'postgresql', 'mongodb', ...],
+        # 100+ skills across 7 categories
     }
-  }
-}
-```
-
----
-
-## 🚀 How to Run
-
-### Development Mode (Recommended for Development)
-
-#### Terminal 1: Start Backend Server
-```bash
-# From project root
-python backend/app.py
-```
-- Backend runs on: **http://localhost:5000**
-- API endpoints: **http://localhost:5000/api/**
-
-#### Terminal 2: Start Frontend Dev Server
-```bash
-# From project root
-cd frontend
-npm run dev
-```
-- Frontend runs on: **http://localhost:3000** (or configured port)
-- Hot Module Replacement (HMR) enabled for instant updates
-
-#### Access the Application
-Open your browser and navigate to:
-- **Development**: http://localhost:3000
-- **Backend API**: http://localhost:5000/api/health (health check)
-
-### Production Mode
-
-#### Build Frontend
-```bash
-cd frontend
-npm run build
-```
-- Creates optimized production build in `frontend/dist/`
-
-#### Run Production Server
-```bash
-# From project root
-python backend/app.py
-```
-- Backend serves built frontend
-- Access at: **http://localhost:5000**
-
----
-
-## 📁 Project Structure
-
-```
-Final_Year_Project/
-│
-├── backend/                      # Backend Python/Flask application
-│   ├── app.py                   # Main Flask application
-│   ├── models.py                # Database models (User, InterviewSession)
-│   ├── google_auth.py           # Google OAuth implementation
-│   ├── gemini.py                # Gemini AI client initialization
-│   ├── resume_analyzer.py       # PDF parsing & AI resume analysis
-│   ├── question_generator.py    # AI-powered question generation
-│   └── requirements.txt         # Python dependencies
-│
-├── frontend/                     # React frontend application
-│   ├── src/
-│   │   ├── components/          # React components
-│   │   │   ├── LoginScreen.jsx         # Google OAuth login UI
-│   │   │   ├── Dashboard.jsx           # Mode selection screen
-│   │   │   ├── ResumeUpload.jsx        # Resume upload interface
-│   │   │   ├── RoleSelection.jsx       # Role-based mode selector
-│   │   │   ├── InterviewSession.jsx    # Interactive interview UI
-│   │   │   ├── FeedbackDashboard.jsx   # Feedback display
-│   │   │   └── LoadingAnimation.jsx    # Loading states
-│   │   ├── api.js               # API configuration
-│   │   ├── App.jsx              # Main app component & routing
-│   │   ├── index.css            # Global styles
-│   │   └── main.jsx             # React entry point
-│   ├── public/                  # Static assets
-│   ├── dist/                    # Production build output (generated)
-│   ├── package.json             # Node dependencies
-│   └── vite.config.js           # Vite configuration
-│
-├── uploads/                      # Uploaded resume files (generated)
-├── instance/                     # SQLite database (generated)
-├── .env                         # Environment variables (not in git)
-├── .gitignore                   # Git ignore rules
-├── README.md                    # This file
-└── pyproject.toml              # Python project configuration (uv)
-```
-
----
-
-## 🔧 Core Components Explained
-
-### Backend Components
-
-#### 1. **app.py** - Main Application
-**Purpose**: Central Flask application that coordinates all backend operations
-
-**Key Responsibilities:**
-- Initialize Flask app and extensions (SQLAlchemy, CORS, Flask-Login)
-- Register authentication blueprints
-- Define API routes for interview operations
-- Serve React frontend in production
-- Handle file uploads and session management
-
-**Critical Routes:**
-- `/api/upload-resume`: Accepts PDF files, triggers AI analysis
-- `/api/generate-questions`: Creates interview questions based on mode
-- `/api/submit-answer`: Processes user responses, triggers AI evaluation
-- `/api/feedback`: Retrieves comprehensive feedback for completed interviews
-
-#### 2. **models.py** - Database Models
-**Purpose**: Define database schema using SQLAlchemy ORM
-
-**Models:**
-
-**User Model:**
-```python
-- id: Primary key
-- google_id: Unique Google OAuth identifier
-- email: User email
-- name: Display name
-- picture: Profile picture URL
-- created_at: Account creation timestamp
-- Relationship: One-to-many with InterviewSession
-```
-
-**InterviewSession Model:**
-```python
-- id: Primary key
-- user_id: Foreign key to User
-- mode: 'resume' or 'role'
-- difficulty: 'beginner', 'intermediate', 'advanced'
-- role: Job role (for role-based mode)
-- resume_filename: Uploaded PDF filename
-- technical_skills: JSON array of technical skills
-- soft_skills: JSON array of soft skills
-- projects: JSON array of projects
-- experience_level: Detected experience level
-- questions: JSON array of generated questions
-- answers: JSON array of user responses
-- feedback: JSON object with comprehensive feedback
-- status: 'active' or 'completed'
-- created_at: Session start time
-```
-
-#### 3. **google_auth.py** - OAuth Authentication
-**Purpose**: Implement Google OAuth 2.0 login flow
-
-**Process:**
-1. User clicks "Login with Google"
-2. Redirect to Google authorization page
-3. User grants permissions
-4. Google redirects back with authorization code
-5. Exchange code for access token
-6. Fetch user profile from Google
-7. Create/update user in database
-8. Create Flask session
-9. Redirect to dashboard
-
-**Why Google OAuth?**
-- Industry-standard security
-- No password management required
-- User trust and convenience
-- Quick implementation with oauthlib
-
-#### 4. **gemini.py** - AI Client
-**Purpose**: Initialize and configure Google Gemini AI client
-
-**Configuration:**
-```python
-import google.generativeai as genai
-
-genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
-
-# Initialize models
-flash_model = genai.GenerativeModel('gemini-2.0-flash-exp')
-pro_model = genai.GenerativeModel('gemini-1.5-pro')
-```
-
-**Why Gemini?**
-- Advanced language understanding
-- Context-aware responses
-- Structured output with Pydantic
-- Cost-effective compared to alternatives
-- Fast response times (Flash model)
-
-#### 5. **resume_analyzer.py** - Resume Processing
-**Purpose**: Extract and analyze resume content using AI
-
-**Process:**
-1. **PDF Parsing**: Extract text using PyPDF2/pdfplumber
-2. **Content Cleaning**: Remove artifacts, normalize formatting
-3. **AI Analysis**: Send to Gemini with structured prompt
-4. **Skill Extraction**: 
-   - Technical skills (languages, frameworks, tools)
-   - Soft skills (communication, leadership, etc.)
-5. **Project Detection**: Identify and summarize key projects
-6. **Experience Level**: Determine entry/mid/senior level
-7. **Keyword Extraction**: Extract relevant keywords for questions
-
-**Why AI-powered?**
-- More accurate than regex patterns
-- Understands context and relationships
-- Handles diverse resume formats
-- Extracts implicit skills
-
-#### 6. **question_generator.py** - Question Creation
-**Purpose**: Generate contextual, difficulty-appropriate interview questions
-
-**Modes:**
-
-**Resume-Based:**
-```python
-def generate_resume_based_questions(skills, projects, difficulty):
-    prompt = f"""
-    Generate {num_questions} interview questions for a candidate with:
-    - Technical Skills: {skills}
-    - Projects: {projects}
-    - Difficulty: {difficulty}
     
-    Focus on practical application and project experience.
-    """
-    # AI generates tailored questions
+    def analyze(self, pdf_path):
+        # Step 1: Extract text
+        text = self.extract_text_from_pdf(pdf_path)
+        
+        # Step 2: Pattern matching (fast)
+        technical_skills = self.extract_technical_skills(text)
+        soft_skills = self.extract_soft_skills(text)
+        projects = self.extract_projects_basic(text)
+        
+        # Step 3: LLM extraction (intelligent)
+        llm_results = self.llm_extract_resume_details(text)
+        
+        # Step 4: Merge results
+        return self._merge_results(pattern_results, llm_results)
 ```
 
-**Role-Based:**
+#### Why pdfplumber + PyPDF2?
+
 ```python
-def generate_role_based_questions(role, difficulty):
-    prompt = f"""
-    Generate {num_questions} interview questions for a {role} position.
-    Difficulty level: {difficulty}
-    
-    Include technical, behavioral, and situational questions.
-    """
+def extract_text_from_pdf(self, pdf_path):
+    try:
+        # Primary: pdfplumber (better table/layout handling)
+        with pdfplumber.open(pdf_path) as pdf:
+            for page in pdf.pages:
+                text += page.extract_text() + "\n"
+    except:
+        # Fallback: PyPDF2 (more compatible with older PDFs)
+        with open(pdf_path, 'rb') as file:
+            pdf_reader = PyPDF2.PdfReader(file)
+            ...
 ```
 
-**Why Dynamic Generation?**
-- Unlimited question variety
-- Perfectly matched to user profile
-- Adapts to different industries
-- Reduces memorization, increases learning
+**pdfplumber**:
+- Superior table extraction
+- Better handling of multi-column layouts
+- Maintains text order more accurately
 
-### Frontend Components
+**PyPDF2 Fallback**:
+- Handles encrypted/older PDFs
+- More lenient with malformed files
+- Ensures analysis always succeeds
 
-#### 1. **LoginScreen.jsx** - Authentication UI
-**Features:**
-- Modern gradient design
-- Google OAuth button
-- Feature showcase on right panel
-- Terms & Privacy links
-- Creator attribution
+### Question Generation System
 
-**Why This Design?**
-- Professional, trustworthy appearance
-- Clear value proposition
-- Minimal friction (single click login)
+#### Why Context-Aware Questions?
 
-#### 2. **Dashboard.jsx** - Mode Selection
-**Features:**
-- Two large mode cards (Resume vs. Role)
-- Visual icons and descriptions
-- Smooth hover effects
-- Responsive grid layout
+Generic questions don't test relevant skills. A Python developer shouldn't answer Java questions.
 
-**User Flow:**
-- User sees clear choice between modes
-- Clicks preferred mode
-- Navigated to respective interface
+#### Generation Strategy
 
-#### 3. **ResumeUpload.jsx** - File Upload
-**Features:**
-- Drag-and-drop interface
-- File validation (PDF only, 16MB max)
-- Upload progress indicator
-- AI analysis preview
-- Skill/project display
+The [`QuestionGenerator`](backend/core/question_generator.py:17) creates **three types of questions**:
 
-**Technical Implementation:**
+1. **Technical Questions (5)**: Based on extracted technical skills
+2. **HR Questions (4)**: Based on soft skills and experience level
+3. **Project Questions (3)**: Based on actual projects mentioned
+
+```python
+def generate_resume_based_questions(self, technical_skills, soft_skills, projects, difficulty):
+    # Technical: Test actual skills from resume
+    technical_questions = self._generate_technical_questions(skills, difficulty)
+    
+    # HR: Assess soft skills mentioned
+    hr_questions = self._generate_hr_questions(soft_skills, difficulty)
+    
+    # Project: Deep dive into actual work
+    project_questions = self._generate_project_questions(projects, difficulty)
+    
+    return {
+        'technical_questions': technical_questions,
+        'hr_questions': hr_questions,
+        'project_questions': project_questions
+    }
+```
+
+#### Prompt Engineering
+
+```python
+prompt = f"""You are an expert technical interviewer conducting a {difficulty} level interview.
+
+The candidate has listed these technical skills: {skills_str}
+
+Generate exactly 5 technical interview questions that are:
+1. Appropriate for {difficulty} level ({level_description})
+2. Test practical knowledge of the listed skills
+3. Include a mix of conceptual and practical questions
+4. Progress from easier to harder
+
+Format: Return only a JSON array of question strings.
+"""
+```
+
+**Why This Prompt Structure?**
+- **Role assignment**: "Expert technical interviewer" sets tone
+- **Context injection**: Actual skills from resume
+- **Constraints**: "Exactly 5" ensures consistent output
+- **Difficulty context**: Variable description per level
+- **Output format**: JSON array for reliable parsing
+
+### API Endpoint Design
+
+#### RESTful Structure
+
+All endpoints follow REST conventions:
+
+```python
+# interviews/urls.py
+urlpatterns = [
+    path('health/', views.health_check),           # GET - Status check
+    path('user-info/', views.user_info),           # GET - Current user
+    path('logout/', views.logout_view),            # POST - End session
+    path('upload-resume/', views.upload_resume),   # POST - File upload
+    path('generate-questions/', views.generate_questions),  # POST - Create questions
+    path('submit-answer/', views.submit_answer),   # POST - Save answer
+    path('complete-interview/', views.complete_interview),  # POST - Get feedback
+    path('session-history/', views.session_history),        # GET - List sessions
+    path('session/<int:session_id>/', views.session_detail),  # GET - Single session
+]
+```
+
+#### Why `@api_login_required` Decorator?
+
+```python
+def api_login_required(view_func):
+    """Returns 401 JSON instead of redirect for unauthenticated API requests."""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+        return view_func(request, *args, **kwargs)
+    return wrapper
+```
+
+Django's default `@login_required` redirects to login page, which breaks API contracts. This custom decorator:
+1. Returns proper HTTP 401 status
+2. Returns JSON error (not HTML redirect)
+3. Maintains consistent API response format
+
+#### File Upload Handling
+
+```python
+@csrf_exempt
+@api_login_required
+@require_http_methods(['POST'])
+def upload_resume(request):
+    # Validation
+    if 'resume' not in request.FILES:
+        return JsonResponse({'error': 'No resume file provided'}, status=400)
+    
+    file = request.FILES['resume']
+    if not file.name.lower().endswith('.pdf'):
+        return JsonResponse({'error': 'Invalid file format'}, status=400)
+    
+    # Secure filename
+    filename = secure_filename(file.name)
+    unique_filename = f"{request.user.id}_{int(time.time())}_{filename}"
+    
+    # Save and analyze
+    ...
+```
+
+**Security Measures**:
+- `secure_filename()`: Prevents path traversal attacks
+- User ID prefix: Isolates files per user
+- Timestamp: Prevents filename collisions
+- Extension check: Ensures only PDFs accepted
+
+---
+
+## Frontend Implementation
+
+### Component Architecture
+
+```
+App.jsx (Root)
+├── LoginScreen.jsx          # Google OAuth login
+├── Dashboard.jsx            # Main navigation hub
+│   ├── ResumeUpload.jsx     # PDF upload + analysis
+│   ├── RoleSelection.jsx    # Role-based mode
+│   ├── InterviewSession.jsx # Question/answer flow
+│   ├── FeedbackDashboard.jsx # Results display
+│   ├── SessionHistory.jsx   # Past interviews
+│   └── SessionDetailPage.jsx # Single session view
+├── TermsOfService.jsx       # Legal
+└── PrivacyPolicy.jsx        # Legal
+```
+
+### State Management
+
+React hooks manage state locally (no Redux needed for this scale):
+
 ```javascript
-// File upload with FormData
-const formData = new FormData();
-formData.append('resume', file);
+// App.jsx - Global auth state
+const [user, setUser] = useState(null);        // Current user
+const [loading, setLoading] = useState(true);  // App initialization
+const [theme, setTheme] = useState("dark");    // Dark/light mode
 
-fetch('/api/upload-resume', {
-  method: 'POST',
-  body: formData,
-  credentials: 'include'
+// Dashboard.jsx - Navigation state
+const [currentView, setCurrentView] = useState('mode-selection');
+const [interviewData, setInterviewData] = useState(null);
+const [feedbackData, setFeedbackData] = useState(null);
+```
+
+### API Integration
+
+```javascript
+// api.js - Centralized API configuration
+export const getApiUrl = (path) => {
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  return `${baseUrl}${path}`;
+};
+
+// Usage in components
+fetch(getApiUrl('/api/user-info/'), {
+  credentials: 'include'  // Important: Sends session cookie
 })
 ```
 
-#### 4. **InterviewSession.jsx** - Interactive Interview
-**Features:**
-- Question display with progress bar
-- Text input for answers
-- Navigation (Next, Previous, Skip)
-- Real-time answer saving
-- Submit interview action
+**Why `credentials: 'include'`?**
+- Required for session-based authentication
+- Sends cookies across domains (CORS)
+- Maintains login state between requests
 
-**State Management:**
+### Theme System
+
 ```javascript
-const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-const [answers, setAnswers] = useState([]);
-const [questions, setQuestions] = useState([]);
+// Theme toggle with localStorage persistence
+const toggleTheme = () => {
+  const newTheme = theme === 'dark' ? 'light' : 'dark';
+  setTheme(newTheme);
+  localStorage.setItem('theme', newTheme);
+  document.body.className = newTheme;
+};
+
+// On mount - restore saved theme
+useEffect(() => {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  setTheme(savedTheme);
+  document.body.className = savedTheme;
+}, []);
 ```
 
-#### 5. **FeedbackDashboard.jsx** - Results Display
-**Features:**
-- Overall score with visual gauge
-- Category-wise scores (Technical, Communication, etc.)
-- Detailed feedback sections
-- Strengths and improvements lists
-- Action buttons (New Interview, Dashboard)
+### Route Protection
 
-**Data Visualization:**
-- Progress circles for scores
-- Color-coded ratings (green/yellow/red)
-- Card-based layout for readability
+```javascript
+// App.jsx - Conditional rendering based on auth
+<Route
+  path="/"
+  element={
+    user ? (
+      <Dashboard user={user} ... />
+    ) : (
+      <LoginScreen setUser={setUser} ... />
+    )
+  }
+/>
+```
 
-#### 6. **LoadingAnimation.jsx** - Loading States
-**Features:**
-- Custom "Generating" text animation
-- Colorful gradient effects
-- Prevents user interaction during loading
-- Professional appearance
+**Why Client-Side Protection?**
+- React Router handles SPA navigation
+- Backend API already has `@api_login_required`
+- Provides smooth UX (no full page reloads)
 
 ---
 
-## 🤔 Why We Use These Technologies
+## AI/ML Components
 
-### Frontend: React + Vite
+### Gemini Client Configuration
 
-**React:**
-- **Component-Based**: Reusable UI components (LoginScreen, Dashboard, etc.)
-- **Virtual DOM**: Fast rendering and updates
-- **Rich Ecosystem**: Huge community, libraries, and tools
-- **State Management**: Easy to manage complex UI state
-- **Learning Curve**: Industry-standard skill for developers
-
-**Vite:**
-- **Lightning Fast**: Hot Module Replacement (HMR) in milliseconds
-- **Modern**: Uses ES modules, optimized for modern browsers
-- **Simple Configuration**: Less setup than Webpack
-- **Optimized Builds**: Efficient production bundles
-- **Developer Experience**: Instant server start, fast updates
-
-**Alternative Considered:** Next.js (overkill for this project, unnecessary SSR)
-
-### Backend: Flask
-
-**Why Flask?**
-- **Lightweight**: Minimal boilerplate, easy to understand
-- **Flexible**: Not opinionated, allows custom architecture
-- **Python Ecosystem**: Access to AI/ML libraries (Gemini, Pydantic)
-- **REST API**: Perfect for frontend-backend separation
-- **Extensions**: Rich ecosystem (SQLAlchemy, Flask-Login, CORS)
-- **Learning**: Excellent for educational projects
-
-**Alternative Considered:** FastAPI (more complex for beginners), Django (too heavy)
-
-### Database: SQLite → PostgreSQL
-
-**SQLite (Development):**
-- **No Setup**: File-based, works out of the box
-- **Portable**: Single file, easy to backup/share
-- **Zero Configuration**: No server required
-- **Perfect for Prototyping**: Fast iteration
-
-**PostgreSQL (Production):**
-- **Scalability**: Handles thousands of concurrent users
-- **JSON Support**: Native JSONB for storing skills, feedback
-- **Advanced Features**: Full-text search, complex queries
-- **Data Integrity**: ACID compliance, transactions
-- **Popular**: Industry standard, well-documented
-
-### AI: Google Gemini
-
-**Why Gemini over alternatives?**
-
-| Feature | Gemini | OpenAI GPT | Anthropic Claude |
-|---------|--------|------------|------------------|
-| Cost | ⭐⭐⭐⭐⭐ Low | ⭐⭐⭐ Medium | ⭐⭐⭐ Medium |
-| Speed | ⭐⭐⭐⭐⭐ Very Fast | ⭐⭐⭐⭐ Fast | ⭐⭐⭐⭐ Fast |
-| Context Window | 1M tokens | 128K tokens | 200K tokens |
-| Structured Output | ✅ Pydantic | ✅ JSON mode | ✅ JSON |
-| Resume Analysis | ✅ Excellent | ✅ Excellent | ✅ Excellent |
-| Free Tier | ✅ Generous | ❌ Limited | ❌ No |
-
-**Key Advantages:**
-- **Generous Free Tier**: Essential for student projects
-- **Fast Response**: Flash model for quick generation
-- **Large Context**: Can process entire resumes
-- **Structured Output**: Native Pydantic integration
-- **Google Ecosystem**: Easy integration with Google OAuth
-
-### Authentication: Google OAuth
-
-**Why OAuth over traditional login?**
-- **Security**: No password storage/management
-- **User Trust**: "Sign in with Google" is familiar
-- **Reduced Friction**: One-click login
-- **Profile Data**: Automatic access to name, email, picture
-- **Scalability**: Google handles authentication infrastructure
-
-**Alternative Considered:** 
-- Email/Password (security risks, forgot password flows)
-- Other OAuth (GitHub, Microsoft - less universal)
-
----
-
-## 🗄️ Database Configuration
-
-### Option 1: SQLite (Default - Development)
-
-**Already Configured**
-```env
-DATABASE_URL=sqlite:///interview_assistant.db
-```
-
-**Pros:**
-- Zero setup
-- File-based (instance/interview_assistant.db)
-- Perfect for development and testing
-
-**Cons:**
-- Limited concurrency
-- Not suitable for production
-- No advanced features
-
-### Option 2: PostgreSQL (Recommended - Production)
-
-#### Installation
-
-**Windows:**
-```bash
-# Download from official site
-https://www.postgresql.org/download/windows/
-
-# Or using Chocolatey
-choco install postgresql
-```
-
-**Linux (Ubuntu):**
-```bash
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-```
-
-**macOS:**
-```bash
-brew install postgresql
-```
-
-#### Database Setup
-
-```bash
-# Start PostgreSQL service
-# Windows: Use Services app or pg_ctl
-# Linux: sudo service postgresql start
-# macOS: brew services start postgresql
-
-# Access PostgreSQL shell
-psql -U postgres
-
-# Create database
-CREATE DATABASE interview_assistant;
-
-# Create user (optional but recommended)
-CREATE USER interview_user WITH PASSWORD 'secure_password_here';
-
-# Grant privileges
-GRANT ALL PRIVILEGES ON DATABASE interview_assistant TO interview_user;
-
-# Exit
-\q
-```
-
-#### Update Configuration
-
-**Install Python Driver:**
-```bash
-pip install psycopg2-binary
-```
-
-**Update .env:**
-```env
-DATABASE_URL=postgresql://interview_user:secure_password_here@localhost:5432/interview_assistant
-```
-
-**Update app.py (if needed):**
 ```python
-# The app already reads from DATABASE_URL environment variable
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL', 
-    'sqlite:///interview_assistant.db'
-)
+# core/gemini.py
+from google import genai
+from google.genai import types
+from pydantic import BaseModel
+
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 ```
 
-#### Migrate Data (Optional)
+### Structured Output with Pydantic
 
-**If moving from SQLite to PostgreSQL:**
 ```python
-# Export data from SQLite
-# Import into PostgreSQL
-# Or start fresh (recommended for development)
+class Sentiment(BaseModel):
+    rating: int
+    confidence: float
+
+def analyze_sentiment(text: str) -> Sentiment:
+    response = client.models.generate_content(
+        model="gemini-2.5-pro",
+        contents=[text],
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=Sentiment,  # Enforces schema
+        ),
+    )
+    return Sentiment(**json.loads(response.text))
+```
+
+**Why Pydantic + Structured Output?**
+1. **Type Safety**: Compile-time validation of AI responses
+2. **Schema Enforcement**: Gemini validates output against schema
+3. **Auto-Documentation**: Models document expected fields
+4. **IDE Support**: Autocomplete and type hints
+
+### Answer Evaluation Logic
+
+```python
+def evaluate_answer(question: str, answer: str, context: dict) -> dict:
+    """
+    Evaluates interview answer and generates comprehensive feedback.
+    
+    Returns:
+        {
+            'overall_score': 85,
+            'technical_accuracy': 90,
+            'communication': 80,
+            'problem_solving': 85,
+            'strengths': ['Clear explanation', 'Good examples'],
+            'weaknesses': ['Missing edge cases'],
+            'improvement_suggestions': ['Consider discussing scalability']
+        }
+    """
+    prompt = f"""
+    Question: {question}
+    Answer: {answer}
+    Context: {context}
+    
+    Evaluate this interview answer comprehensively...
+    """
+    # Gemini analysis with structured output
+    ...
 ```
 
 ---
 
-## 📡 API Documentation
+## API Documentation
 
 ### Authentication Endpoints
 
-#### `GET /auth/google`
-**Description**: Initiates Google OAuth flow  
-**Authentication**: None  
-**Response**: Redirects to Google login
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/auth/google/` | GET | Initiate Google OAuth | No |
+| `/auth/google/callback/` | GET | OAuth callback | No |
+| `/auth/logout/` | POST | Logout user | Yes |
 
-#### `GET /auth/callback`
-**Description**: OAuth callback handler  
-**Authentication**: OAuth code  
-**Response**: Redirects to dashboard with session
+### Core API Endpoints
 
-#### `GET /auth/logout`
-**Description**: Logs out current user  
-**Authentication**: Required  
-**Response**: Redirects to login page
+#### Health Check
+```http
+GET /api/health/
 
-#### `GET /api/user`
-**Description**: Get current user info  
-**Authentication**: Required  
-**Response:**
-```json
+Response:
 {
-  "id": 1,
-  "name": "John Doe",
-  "email": "john@example.com",
-  "picture": "https://..."
+  "status": "healthy",
+  "message": "Cognivue AI Backend (Django) Running",
+  "framework": "Django"
 }
 ```
 
-### Interview Endpoints
+#### Get Current User
+```http
+GET /api/user-info/
 
-#### `POST /api/upload-resume`
-**Description**: Upload and analyze resume  
-**Authentication**: Required  
-**Request:**
-```javascript
-FormData:
-  resume: File (PDF, max 16MB)
+Response:
+{
+  "id": 1,
+  "username": "john_doe",
+  "email": "john@example.com",
+  "avatar_url": "https://..."
+}
 ```
-**Response:**
-```json
+
+#### Upload Resume
+```http
+POST /api/upload-resume/
+Content-Type: multipart/form-data
+
+Body:
+- resume: <PDF file>
+
+Response:
 {
   "message": "Resume uploaded and analyzed successfully",
   "filename": "1_1234567890_resume.pdf",
   "analysis": {
-    "technical_skills": ["Python", "React", "SQL"],
-    "soft_skills": ["Communication", "Leadership"],
-    "projects": ["E-commerce Platform", "ML Model"],
-    "experience_level": "intermediate",
-    "summary": "..."
-  },
-  "keywords": ["python", "react", "sql"]
+    "technical_skills": [...],
+    "soft_skills": [...],
+    "projects": [...],
+    "experience_level": "mid",
+    "summary": "Software engineer with 3 years..."
+  }
 }
 ```
 
-#### `POST /api/generate-questions`
-**Description**: Generate interview questions  
-**Authentication**: Required  
-**Request:**
-```json
+#### Generate Questions
+```http
+POST /api/generate-questions/
+Content-Type: application/json
+
+Body (Resume Mode):
 {
   "mode": "resume",
   "difficulty": "intermediate",
-  "role": "Software Engineer",
-  "filename": "1_1234567890_resume.pdf",
-  "analysis": {},
-  "keywords": ["python", "react"]
+  "analysis": { ... },
+  "filename": "1_1234567890_resume.pdf"
 }
-```
-**Response:**
-```json
+
+Body (Role Mode):
+{
+  "mode": "role",
+  "difficulty": "advanced",
+  "role": "Software Engineer",
+  "keywords": ["python", "django", "aws"]
+}
+
+Response:
 {
   "session_id": 42,
-  "questions": [
-    "Explain your experience with Python...",
-    "Describe a challenging React project..."
-  ]
+  "questions": {
+    "technical_questions": [...],
+    "hr_questions": [...],
+    "project_questions": [...]
+  }
 }
 ```
 
-#### `POST /api/submit-answer`
-**Description**: Submit answer for a question  
-**Authentication**: Required  
-**Request:**
-```json
+#### Submit Answer
+```http
+POST /api/submit-answer/
+Content-Type: application/json
+
+Body:
 {
   "session_id": 42,
   "question_index": 0,
-  "answer": "In my Python project, I used Flask to..."
+  "answer": "My approach would be to..."
 }
-```
-**Response:**
-```json
+
+Response:
 {
   "message": "Answer submitted successfully"
 }
 ```
 
-#### `POST /api/complete-interview`
-**Description**: Complete interview and generate feedback  
-**Authentication**: Required  
-**Request:**
-```json
+#### Complete Interview
+```http
+POST /api/complete-interview/
+Content-Type: application/json
+
+Body:
 {
   "session_id": 42
 }
-```
-**Response:**
-```json
+
+Response:
 {
-  "message": "Interview completed successfully",
+  "message": "Interview completed",
   "feedback": {
-    "overall_score": 75,
-    "category_scores": {
-      "technical_accuracy": 80,
-      "communication": 70,
-      "problem_solving": 75,
-      "confidence": 72
-    },
-    "strengths": [
-      "Strong technical knowledge of Python",
-      "Clear communication style"
-    ],
-    "improvements": [
-      "Provide more specific examples",
-      "Elaborate on project challenges"
-    ],
-    "detailed_feedback": "Your responses demonstrate..."
+    "overall_score": 85,
+    "technical_accuracy": 90,
+    "communication": 80,
+    "strengths": [...],
+    "weaknesses": [...],
+    "improvement_suggestions": [...]
   }
 }
 ```
 
----
+#### Session History
+```http
+GET /api/session-history/
 
-## 🐛 Troubleshooting
-
-### Common Issues & Solutions
-
-#### 1. **Port Already in Use**
-**Error**: `Address already in use: 5000`
-
-**Solution:**
-```bash
-# Windows - Find and kill process
-netstat -ano | findstr :5000
-taskkill /PID <PID> /F
-
-# Linux/Mac
-lsof -ti:5000 | xargs kill -9
-
-# Or change port in vite.config.js
-server: { port: 3000 }
-```
-
-#### 2. **Module Not Found**
-**Error**: `ModuleNotFoundError: No module named 'flask'`
-
-**Solution:**
-```bash
-# Ensure virtual environment is activated
-# Windows
-venv\Scripts\activate
-
-# Install dependencies again
-pip install -r requirements.txt
-```
-
-#### 3. **Google OAuth Redirect Error**
-**Error**: `redirect_uri_mismatch`
-
-**Solution:**
-- Go to Google Cloud Console
-- Navigate to OAuth 2.0 Client IDs
-- Add authorized redirect URI: `http://localhost:5000/auth/callback`
-- Ensure exact match (http vs https, trailing slash)
-
-#### 4. **Gemini API Key Invalid**
-**Error**: `API key not valid`
-
-**Solution:**
-- Verify GEMINI_API_KEY in .env
-- Check API key in Google AI Studio
-- Ensure no extra spaces or quotes
-- Regenerate key if necessary
-
-#### 5. **Database Not Found**
-**Error**: `OperationalError: no such table: user`
-
-**Solution:**
-```bash
-# Recreate database tables
-python
->>> from backend.app import app, db
->>> with app.app_context():
-...     db.create_all()
->>> exit()
-```
-
-#### 6. **Loading Animation Width Issue**
-**Symptom**: Page becomes very wide during loading
-
-**Solution:**
-Already fixed in latest code:
-```css
-.loader-wrapper {
-  width: 100%;
-  max-width: 400px;
-  overflow: hidden;
+Response:
+{
+  "sessions": [
+    {
+      "id": 42,
+      "mode": "resume",
+      "difficulty": "intermediate",
+      "status": "completed",
+      "created_at": "2026-03-01T10:00:00Z",
+      "overall_score": 85
+    }
+  ]
 }
 ```
 
 ---
 
-## 🚀 Future Enhancements
+## Authentication Flow
 
-### Planned Features
-1. **Voice Input**: Record answers via microphone
-2. **Video Interview Practice**: Camera integration for body language feedback
-3. **Mock Interview Scheduling**: Schedule practice sessions
-4. **Company-Specific Questions**: Target specific companies (Google, Amazon, etc.)
-5. **Interview History**: Track progress over time with analytics
-6. **Peer Review**: Share interviews with mentors for human feedback
-7. **Mobile App**: React Native version for iOS/Android
-8. **More AI Models**: Support for Claude, GPT-4, etc.
-9. **Resume Builder**: Integrated resume creation tool
-10. **Job Matching**: Recommend jobs based on skills and interview performance
+### Google OAuth 2.0 Flow
 
-### Technical Improvements
-- Implement Redis for session caching
-- Add WebSocket for real-time updates
-- Containerize with Docker
-- Deploy to cloud (AWS, GCP, Azure)
-- Add comprehensive unit and integration tests
-- Implement CI/CD pipeline
-- Add rate limiting for API endpoints
-- Enhance security with JWT tokens
+```
+┌─────────┐                                    ┌─────────────┐
+│  User   │ ──────── 1. Click Login ─────────► │   Frontend  │
+└─────────┘                                    └──────┬──────┘
+                                                      │
+                              2. Redirect to Google OAuth
+                                                      ▼
+                                              ┌──────────────┐
+                                              │    Google    │
+                                              │  OAuth Server│
+                                              └──────┬───────┘
+                                                     │
+                         3. User Consent & Authorization
+                                                     │
+                              4. Redirect with auth code
+                                                     ▼
+┌─────────┐     5. Exchange code for tokens      ┌─────────────┐
+│ Backend │ ◄────────────────────────────────────│    Google   │
+└────┬────┘                                      └─────────────┘
+     │
+     │ 6. Fetch user info with access token
+     ▼
+┌─────────┐     7. Create/get user in DB         ┌─────────────┐
+│  User   │ ◄────────────────────────────────────│   Backend   │
+│ Session │                                      └─────────────┘
+│ Created │
+└────┬────┘
+     │
+     │ 8. Set session cookie
+     ▼
+┌─────────┐
+│Frontend │ ◄── 9. Redirect with authenticated session
+│  Home   │
+└─────────┘
+```
 
----
+### Session Security
 
-## 👥 Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
----
-
-## 📄 License
-
-This project is developed as a Final Year Project for educational purposes.
-
----
-
-## 🙏 Acknowledgments
-
-- **Google Gemini AI** for powerful language models
-- **React & Vite** for modern frontend development
-- **Flask** for simple yet powerful backend
-- **SQLAlchemy** for excellent ORM capabilities
-- **Cognivue AI Team** for dedication and hard work
+1. **CSRF Protection**: Django's CSRF middleware validates requests
+2. **Secure Cookies**: HttpOnly, Secure, SameSite flags
+3. **Session Expiry**: 7-day automatic expiration
+4. **Database Sessions**: Stored server-side (not JWT in localStorage)
 
 ---
 
-## 📞 Contact
+## Interview Flow
 
-**Project Team**: Cognivue AI Team
-**GitHub**: [Your GitHub Profile]  
-**Email**: [Your Email]
+### Complete User Journey
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            1. AUTHENTICATION                                 │
+│                                                                              │
+│   ┌──────────┐     ┌────────────┐     ┌─────────────┐     ┌──────────┐    │
+│   │  Login   │ ──► │   Google   │ ──► │   Backend   │ ──► │Dashboard │    │
+│   │  Screen  │     │    OAuth   │     │ Auth Create │     │  (Home)  │    │
+│   └──────────┘     └────────────┘     └─────────────┘     └──────────┘    │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         2. MODE SELECTION                                    │
+│                                                                              │
+│   ┌─────────────────┐                ┌─────────────────┐                   │
+│   │  Resume-Based   │                │   Role-Based    │                   │
+│   │     Mode        │                │      Mode       │                   │
+│   │                 │                │                 │                   │
+│   │ Upload PDF ─────┼──► Analysis    │ Select Role ────┼──► Questions      │
+│   │ AI Extracts     │                │ Predefined Qs   │                   │
+│   │ Skills &        │                │ for Role        │                   │
+│   │ Projects        │                │                 │                   │
+│   └─────────────────┘                └─────────────────┘                   │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       3. DIFFICULTY SELECTION                                │
+│                                                                              │
+│   ┌──────────┐  ┌──────────────┐  ┌──────────┐                              │
+│   │ Beginner │  │Intermediate  │  │ Advanced │                              │
+│   │ (0-1 yr) │  │  (1-3 yrs)   │  │ (3+ yrs) │                              │
+│   └──────────┘  └──────────────┘  └──────────┘                              │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      4. INTERVIEW SESSION                                    │
+│                                                                              │
+│   Question Display                                                            │
+│        │                                                                      │
+│        ▼                                                                      │
+│   ┌────────────┐     ┌────────────┐     ┌────────────┐                      │
+│   │  Technical │ ──► │     HR     │ ──► │  Project   │                      │
+│   │  Q1 → Q5   │     │  Q1 → Q4   │     │  Q1 → Q3   │                      │
+│   └────────────┘     └────────────┘     └────────────┘                      │
+│        │                                                                      │
+│        ▼                                                                      │
+│   Answer Input (Text) ──► Submit ──► Save to Database                        │
+│                                                                              │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      5. FEEDBACK GENERATION                                  │
+│                                                                              │
+│   ┌───────────────────────────────────────────────────────────────────────┐ │
+│   │                    Gemini AI Evaluation                               │ │
+│   │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ │ │
+│   │  │  Technical   │ │Communication │ │   Problem    │ │    Overall   │ │ │
+│   │  │  Accuracy    │ │    Skills    │ │   Solving    │ │    Score     │ │ │
+│   │  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘ │ │
+│   └───────────────────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       6. FEEDBACK DASHBOARD                                  │
+│                                                                              │
+│   ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐            │
+│   │  Score Display  │  │  Strengths &    │  │  Improvement    │            │
+│   │  (Radar Chart)  │  │  Weaknesses     │  │  Suggestions    │            │
+│   └─────────────────┘  └─────────────────┘  └─────────────────┘            │
+│                                                                              │
+│   [View Session History] [Start New Interview]                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 📚 Additional Resources
+## Deployment Guide
 
-- [Google Gemini API Documentation](https://ai.google.dev/)
-- [Flask Documentation](https://flask.palletsprojects.com/)
-- [React Documentation](https://react.dev/)
-- [SQLAlchemy Documentation](https://docs.sqlalchemy.org/)
-- [OAuth 2.0 Guide](https://oauth.net/2/)
+### Local Development Setup
+
+```bash
+# 1. Clone repository
+git clone <repo-url>
+cd Cognive-AI
+
+# 2. Backend setup
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# 3. Database setup
+python manage.py migrate
+python manage.py createsuperuser
+
+# 4. Environment variables
+cp .env.example .env
+# Edit .env with your API keys
+
+# 5. Run backend
+python manage.py runserver
+
+# 6. Frontend setup (new terminal)
+cd ../frontend
+npm install
+npm run dev
+
+# 7. Access application
+# Frontend: http://localhost:5173
+# Backend: http://localhost:8000
+# Admin: http://localhost:8000/admin
+```
+
+### Production Deployment (Render)
+
+The [`render.yaml`](render.yaml:1) file configures automatic deployment:
+
+```yaml
+services:
+  - type: web
+    name: cognivue-ai-backend
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt &&
+      cd backend && python fix_migrations.py &&
+      cd ../frontend && npm install && npm run build
+    startCommand: |
+      cd backend && gunicorn cognivue.wsgi:application 
+        --bind 0.0.0.0:$PORT 
+        --workers 2 
+        --timeout 120
+    healthCheckPath: /api/health/
+```
+
+**Build Process**:
+1. Install Python dependencies
+2. Run database migrations
+3. Install Node dependencies
+4. Build React frontend
+
+**Runtime**:
+- Gunicorn WSGI server
+- 2 workers (handles concurrent requests)
+- 120-second timeout (for AI processing)
 
 ---
 
-**Built with ❤️ by Cognivue AI Team**
+## Environment Variables
+
+### Required Variables
+
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| `GEMINI_API_KEY` | Google Gemini AI access | `AIzaSyB...` |
+| `GOOGLE_OAUTH_CLIENT_ID` | Google OAuth app ID | `123456789.apps...` |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth secret | `GOCSPX-...` |
+| `GOOGLE_REDIRECT_URI` | OAuth callback URL | `https://.../auth/google/callback/` |
+| `DATABASE_URL` | PostgreSQL connection | `postgresql://user:pass@host/db` |
+| `SESSION_SECRET` | Django secret key | `django-insecure-...` |
+
+### Optional Variables
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `FRONTEND_URL` | CORS allowed origin | `http://localhost:3000` |
+| `CORS_ORIGINS` | Additional CORS origins | - |
+| `FLASK_DEBUG` | Debug mode | `True` |
+| `MAX_UPLOAD_SIZE` | Max file upload size | `16777216` (16MB) |
+
+### Google Cloud Console Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create new project
+3. Enable APIs:
+   - Google+ API (for OAuth)
+   - Gemini API
+4. Create OAuth 2.0 credentials
+5. Add authorized redirect URI: `https://your-domain.com/auth/google/callback/`
+6. Copy Client ID and Secret to environment variables
+
+---
+
+## Security Considerations
+
+1. **API Key Protection**: Never commit `.env` files; use Render/Google Secret Manager
+2. **CSRF Protection**: Enabled for all state-changing operations
+3. **File Upload Security**: 
+   - Extension validation (PDF only)
+   - Filename sanitization
+   - Size limits (16MB default)
+4. **Session Security**: HttpOnly, Secure, SameSite cookies
+5. **CORS**: Whitelist-based origin validation
+
+---
+
+## Performance Optimizations
+
+1. **Database Connection Pooling**: `conn_max_age=600` in database config
+2. **Static File Serving**: WhiteNoise or CDN for production
+3. **React Build Optimization**: Vite produces optimized bundles
+4. **AI Response Caching**: Consider caching common question patterns
+5. **Lazy Loading**: Components loaded on-demand via React Router
+
+---
+
+## Future Enhancements
+
+1. **Speech-to-Text**: Add voice answer capability
+2. **Video Interviews**: WebRTC integration for live video
+3. **Multi-language Support**: i18n for global accessibility
+4. **Mobile App**: React Native port
+5. **AI Tutor**: Personalized learning paths based on weak areas
+6. **Integration**: LinkedIn, GitHub profile import
+
+---
+
+## License
+
+MIT License - See LICENSE file for details
+
+---
+
+## Support
+
+For issues or questions:
+- Create an issue in the repository
+- Contact: support@cognivue.ai
+
+---
+
+**Built with ❤️ to help you land your dream job!**
