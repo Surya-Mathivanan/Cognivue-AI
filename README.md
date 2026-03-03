@@ -1,20 +1,5 @@
 # 🎯 Cognivue AI - Complete Technical Documentation
 
-## 📋 Table of Contents
-1. [Overview](#overview)
-2. [System Architecture](#system-architecture)
-3. [Technology Stack Deep Dive](#technology-stack-deep-dive)
-4. [Database Design & Rationale](#database-design--rationale)
-5. [Backend Implementation](#backend-implementation)
-6. [Frontend Implementation](#frontend-implementation)
-7. [AI/ML Components](#aiml-components)
-8. [API Documentation](#api-documentation)
-9. [Authentication Flow](#authentication-flow)
-10. [Interview Flow](#interview-flow)
-11. [Deployment Guide](#deployment-guide)
-12. [Environment Variables](#environment-variables)
-
----
 
 ## Overview
 
@@ -41,6 +26,27 @@ Cognivue AI solves these problems through:
    - Role-based mode for industry-specific preparation
 3. **Real-time AI Evaluation**: Google Gemini evaluates answers instantly with detailed feedback
 4. **Progress Tracking**: Historical session data helps users track improvement over time
+
+---
+![alt text](<Images/login page.png>)
+![alt text](<Images/homme page 1.png>)
+![alt text](<Images/homee page 2.png>)
+![alt text](<Images/history page.png>)
+![alt text](<Images/Screenshot 2026-02-28 094819.png>)
+![alt text](<Images/Screenshot 2026-02-28 094854.png>)
+![alt text](<Images/Screenshot 2026-02-28 094912.png>)
+![alt text](<Images/Screenshot 2026-02-28 094935.png>)
+
+
+
+
+
+---
+
+
+
+
+
 
 ---
 
