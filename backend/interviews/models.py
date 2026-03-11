@@ -57,7 +57,7 @@ class InterviewSession(models.Model):
     def mark_completed(self):
         self.status = 'completed'
         self.completed_at = timezone.now()
-        self.save(update_fields=['status', 'completed_at'])
+        self.save(update_fields=['status', 'completed_at', 'feedback'])
 
     @property
     def overall_score(self):

@@ -33,6 +33,9 @@ urlpatterns = [
     # All API endpoints
     path('api/', include('interviews.urls')),
 
+    # HR portal endpoints
+    path('hr/', include('hr.urls')),
+
     # Serve React assets in production
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]

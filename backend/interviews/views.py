@@ -57,7 +57,35 @@ def user_info(request):
         'username': user.username or user.email.split('@')[0],
         'email': user.email,
         'avatar_url': getattr(user, 'avatar_url', ''),
+        'uid': getattr(user, 'uid', ''),
+        'college_name': getattr(user, 'college_name', ''),
+        'degree': getattr(user, 'degree', ''),
+        'branch': getattr(user, 'branch', ''),
+        'address': getattr(user, 'address', ''),
+        'phone_number': getattr(user, 'phone_number', ''),
+        'skills': getattr(user, 'skills', ''),
+        'location': getattr(user, 'location', ''),
     })
+
+
+@csrf_exempt
+@api_login_required
+@require_http_methods(['POST', 'PUT', 'PATCH'])
+def update_profile(request):
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        
+        # Update allowed fields
+        allowed_fields = ['college_name', 'degree', 'branch', 'address', 'phone_number', 'skills', 'location']
+        for field in allowed_fields:
+            if field in data:
+                setattr(user, field, data[field])
+                
+        user.save()
+        return JsonResponse({'message': 'Profile updated successfully'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 
 # ─── Logout ───────────────────────────────────────────────────────────────────
@@ -189,9 +217,12 @@ def generate_questions(request):
         })
 
     except Exception as e:
+        import traceback
         print(f"Error generating questions: {e}")
+        traceback.print_exc()
         return JsonResponse({
-            'error': 'An error occurred while generating questions. Please try again.'
+            'error': 'An error occurred while generating questions. Please try again.',
+            'details': str(e),
         }, status=500)
 
 
@@ -463,7 +494,7 @@ Return ONLY a JSON object:
     max_retries, retry_delay = 3, 1
     for attempt in range(max_retries):
         try:
-            response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)
+            response = client.models.generate_content(model='gemini-3-flash-preview', contents=prompt)
             if response.text:
                 match = re.search(r'\{.*\}', response.text, re.DOTALL)
                 if match:
@@ -535,7 +566,7 @@ Be constructive, specific, and encouraging while providing actionable feedback.
     max_retries, retry_delay = 3, 1
     for attempt in range(max_retries):
         try:
-            response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)
+            response = client.models.generate_content(model='gemini-3-flash-preview', contents=prompt)
             if response.text:
                 match = re.search(r'\{.*\}', response.text, re.DOTALL)
                 if match:

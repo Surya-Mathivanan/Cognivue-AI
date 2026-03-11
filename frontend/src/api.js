@@ -9,3 +9,15 @@ export const getApiUrl = (endpoint) => {
 
 // Export base URL for direct use
 export { API_BASE_URL };
+
+// Update User Profile
+export const updateUserProfile = async (data) => {
+  const response = await fetch(getApiUrl('/api/update-profile/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+    credentials: 'include',
+  });
+  if (!response.ok) throw new Error('Failed to update profile');
+  return response.json();
+};

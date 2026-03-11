@@ -5,6 +5,7 @@ import InterviewSession from './InterviewSession';
 import FeedbackDashboard from './FeedbackDashboard';
 import SessionHistory from './SessionHistory';
 import SessionDetailPage from './SessionDetailPage';
+import UserProfile from './UserProfile';
 import { getApiUrl } from '../api';
 
 function Dashboard({ user, setUser, theme, toggleTheme }) {
@@ -41,59 +42,75 @@ function Dashboard({ user, setUser, theme, toggleTheme }) {
       case 'mode-selection':
         return (
           <div className="dashboard-main home-modern">
-            {/* Hero Section */}
+
+            {/* ── Hero ── */}
             <div className="home-hero">
               <div className="home-hero-content">
                 <div className="home-greeting">
                   <span className="greeting-wave">👋</span>
                   <span className="greeting-text">Welcome back,</span>
                 </div>
-                <h1 className="home-hero-title">
-                  {user?.username || 'User'}
-                </h1>
+                <h1 className="home-hero-title">{user?.username || 'User'}</h1>
                 <p className="home-hero-subtitle">
-                  Ready to sharpen your interview skills? Choose your preparation mode below.
+                  Land your dream job with AI-powered mock interviews — personalized, realistic, and instant feedback.
                 </p>
+                {/* <div className="home-hero-ctas">
+                  <button
+                    className="home-cta-primary"
+                    onClick={() => setCurrentView('resume-upload')}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Start with Resume
+                  </button>
+                  <button
+                    className="home-cta-secondary"
+                    onClick={() => setCurrentView('role-selection')}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Choose a Role
+                  </button>
+                </div> */}
               </div>
               <div className="home-hero-decoration">
                 <div className="hero-orb hero-orb-1" />
                 <div className="hero-orb hero-orb-2" />
+                <div className="hero-orb hero-orb-3" />
               </div>
             </div>
 
-            {/* Quick Stats Row */}
+            {/* ── Stats row ── */}
             <div className="home-quick-stats">
-              <div className="quick-stat-item">
-                <div className="quick-stat-icon">🎯</div>
-                <div className="quick-stat-info">
-                  <span className="quick-stat-label">Practice Modes</span>
-                  <span className="quick-stat-value">2 Available</span>
+              {[
+                { icon: '🎯', label: 'Practice Modes', value: '2 Available' },
+                { icon: '🤖', label: 'AI Engine', value: 'Gemini AI' },
+                { icon: '⚡', label: 'Feedback', value: 'Real-time' },
+                { icon: '🏆', label: 'Roles Covered', value: '10+ Roles' },
+              ].map((s, i) => (
+                <div className="quick-stat-item" key={i}>
+                  <div className="quick-stat-icon">{s.icon}</div>
+                  <div className="quick-stat-info">
+                    <span className="quick-stat-label">{s.label}</span>
+                    <span className="quick-stat-value">{s.value}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="quick-stat-item">
-                <div className="quick-stat-icon">🤖</div>
-                <div className="quick-stat-info">
-                  <span className="quick-stat-label">AI Engine</span>
-                  <span className="quick-stat-value">Gemini Pro</span>
-                </div>
-              </div>
-              <div className="quick-stat-item">
-                <div className="quick-stat-icon">⚡</div>
-                <div className="quick-stat-info">
-                  <span className="quick-stat-label">Feedback</span>
-                  <span className="quick-stat-value">Real-time</span>
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Mode Selection Cards */}
+            {/* ── Mode Cards ── */}
             <h2 className="home-section-title">Choose Your Interview Mode</h2>
             <div className="mode-selection-modern">
+
               <div className="mode-card-modern" onClick={() => setCurrentView('resume-upload')}>
                 <div className="mode-card-shine" />
                 <div className="mode-card-badge">Popular</div>
-                <div className="mode-icon-modern">
-                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <div className="mode-icon-modern mode-icon-resume">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
                     <line x1="16" y1="13" x2="8" y2="13"/>
@@ -102,56 +119,89 @@ function Dashboard({ user, setUser, theme, toggleTheme }) {
                   </svg>
                 </div>
                 <h3 className="mode-card-title">Resume-Based Interview</h3>
-                <p className="mode-card-desc">Upload your resume and get AI-generated questions tailored to your experience and skills</p>
+                <p className="mode-card-desc">
+                  Upload your PDF resume. Our AI analyzes your skills, projects, and experience to generate hyper-personalized questions — just like a real interviewer would.
+                </p>
+                <ul className="mode-card-bullets">
+                  <li>✅ Questions tailored to your exact skills</li>
+                  <li>✅ Project-specific deep-dives</li>
+                  <li>✅ Identifies skill gaps automatically</li>
+                </ul>
                 <div className="mode-card-features">
                   <span className="mode-feature-tag">📄 Resume Analysis</span>
                   <span className="mode-feature-tag">🎯 Personalized</span>
+                  <span className="mode-feature-tag">🧠 Adaptive</span>
                 </div>
-                <button className="btn btn-primary mode-card-btn">Get Started →</button>
+                <button className="btn btn-primary mode-card-btn">Upload Resume →</button>
               </div>
 
               <div className="mode-card-modern" onClick={() => setCurrentView('role-selection')}>
                 <div className="mode-card-shine" />
-                <div className="mode-icon-modern">
-                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <circle cx="12" cy="12" r="10"/>
-                    <circle cx="12" cy="12" r="6"/>
-                    <circle cx="12" cy="12" r="2"/>
+                <div className="mode-icon-modern mode-icon-role">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                   </svg>
                 </div>
                 <h3 className="mode-card-title">Role-Based Interview</h3>
-                <p className="mode-card-desc">Select a specific role and difficulty level for targeted practice sessions</p>
+                <p className="mode-card-desc">
+                  Pick your target job title and experience level. Get a focused set of domain-specific technical and behavioral questions for that exact role.
+                </p>
+                <ul className="mode-card-bullets">
+                  <li>✅ 10+ roles including SWE, PM, Data Sci</li>
+                  <li>✅ Beginner → Advanced difficulty</li>
+                  <li>✅ Industry-standard question bank</li>
+                </ul>
                 <div className="mode-card-features">
                   <span className="mode-feature-tag">🏷️ Role Specific</span>
-                  <span className="mode-feature-tag">📊 3 Difficulty Levels</span>
+                  <span className="mode-feature-tag">📊 3 Levels</span>
+                  <span className="mode-feature-tag">⚡ Instant Start</span>
                 </div>
                 <button className="btn btn-primary mode-card-btn">Choose Role →</button>
               </div>
             </div>
 
-            {/* How it works */}
+            {/* ── How it works ── */}
             <div className="home-how-it-works">
               <h2 className="home-section-title">How It Works</h2>
               <div className="how-steps">
-                <div className="how-step">
-                  <div className="how-step-num">1</div>
-                  <h4>Choose Mode</h4>
-                  <p>Upload resume or select a role</p>
-                </div>
-                <div className="how-step-connector" />
-                <div className="how-step">
-                  <div className="how-step-num">2</div>
-                  <h4>Answer Questions</h4>
-                  <p>Respond via text or voice</p>
-                </div>
-                <div className="how-step-connector" />
-                <div className="how-step">
-                  <div className="how-step-num">3</div>
-                  <h4>Get Feedback</h4>
-                  <p>Detailed AI-powered analysis</p>
-                </div>
+                {[
+                  { num: 1, title: 'Choose Mode', desc: 'Upload your resume or pick a job role to get started in seconds.' },
+                  { num: 2, title: 'Answer Questions', desc: 'Respond to AI-generated questions as if in a real interview.' },
+                  { num: 3, title: 'Get Scored', desc: 'Receive detailed feedback, a score breakdown, and improvement tips.' },
+                ].map((step, i, arr) => (
+                  <React.Fragment key={step.num}>
+                    <div className="how-step">
+                      <div className="how-step-num">{step.num}</div>
+                      <h4>{step.title}</h4>
+                      <p>{step.desc}</p>
+                    </div>
+                    {i < arr.length - 1 && <div className="how-step-connector" />}
+                  </React.Fragment>
+                ))}
               </div>
             </div>
+
+            {/* ── Tips ── */}
+            {/* <div className="home-tips-section">
+              <h2 className="home-section-title">💡 Pro Tips</h2>
+              <div className="home-tips-grid">
+                {[
+                  { icon: '🎙️', tip: 'Speak your answers aloud — it builds real interview confidence.' },
+                  { icon: '⏱️', tip: 'Aim for 1–2 minute answers. Concise beats verbose every time.' },
+                  { icon: '🔁', tip: 'Repeat interviews on the same role to track your improvement over time.' },
+                  { icon: '📋', tip: 'Use STAR method (Situation, Task, Action, Result) for behavioral questions.' },
+                ].map((t, i) => (
+                  <div className="home-tip-card" key={i}>
+                    <span className="home-tip-icon">{t.icon}</span>
+                    <p className="home-tip-text">{t.tip}</p>
+                  </div>
+                ))}
+              </div>
+            </div> */}
+
           </div>
         );
 
@@ -186,6 +236,9 @@ function Dashboard({ user, setUser, theme, toggleTheme }) {
             setCurrentView={setCurrentView}
           />
         );
+
+      case 'profile':
+        return <UserProfile user={user} setCurrentView={setCurrentView} />;
 
       default:
         return <div>Unknown view</div>;
@@ -258,6 +311,17 @@ function Dashboard({ user, setUser, theme, toggleTheme }) {
               <circle cx="12" cy="12" r="10"/>
             </svg>
             <span>History</span>
+          </button>
+
+          <button
+            className={`nav-item ${currentView === 'profile' ? 'active' : ''}`}
+            onClick={() => navigateTo('profile')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span>My Profile</span>
           </button>
         </nav>
 

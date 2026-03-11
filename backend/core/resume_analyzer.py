@@ -302,8 +302,10 @@ Focus on:
 Be thorough but concise. Return ONLY valid JSON."""
 
             response = self.client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
+                model="gemini-3-flash-preview",
+                contents=[
+                    types.Content(role="user", parts=[types.Part(text=prompt)])
+                ],
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     temperature=0.3

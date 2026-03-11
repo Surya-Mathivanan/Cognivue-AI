@@ -5,6 +5,7 @@ urlpatterns = [
     # Core endpoints (matches Flask routes)
     path('health/', views.health_check, name='health_check'),
     path('user-info/', views.user_info, name='user_info'),
+    path('update-profile/', views.update_profile, name='update_profile'),
     path('logout/', views.logout_view, name='api_logout'),
     path('upload-resume/', views.upload_resume, name='upload_resume'),
     path('generate-questions/', views.generate_questions, name='generate_questions'),

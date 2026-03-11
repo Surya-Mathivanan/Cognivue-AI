@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 # IMPORTANT: KEEP THIS COMMENT
 # Follow these instructions when using this blueprint:
-# - Note that the newest Gemini model series is "gemini-2.5-flash" or gemini-2.5-pro"
+# - Note that the newest Gemini model series is "gemini-3-flash-preview" or gemini-3-flash-preview"
 #   - do not change this unless explicitly requested by the user
 # - Sometimes the google genai SDK has occasional type errors. You might need to run to validate, at time.
 # The SDK was recently renamed from google-generativeai to google-genai. This file reflects the new name and the new APIs.
@@ -20,7 +20,7 @@ client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY", "test-api-key"))
 
 def summarize_article(text: str) -> str:
     prompt = f"Please summarize the following text concisely while maintaining key points:\n\n{text}"
-    response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+    response = client.models.generate_content(model="gemini-3-flash-preview", contents=prompt)
     return response.text or "SOMETHING WENT WRONG"
 
 
@@ -39,7 +39,7 @@ def analyze_sentiment(text: str) -> Sentiment:
             "{'rating': number, 'confidence': number}")
 
         response = client.models.generate_content(
-            model="gemini-2.5-pro",
+            model="gemini-3-flash-preview",
             contents=[
                 types.Content(role="user", parts=[types.Part(text=text)])
             ],
@@ -67,7 +67,7 @@ def analyze_image(jpeg_image_path: str) -> str:
     with open(jpeg_image_path, "rb") as f:
         image_bytes = f.read()
         response = client.models.generate_content(
-            model="gemini-2.5-pro",
+            model="gemini-3-flash-preview",
             contents=[
                 types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
                 "Analyze this image in detail and describe its key elements, context, and any notable aspects.",
@@ -80,7 +80,7 @@ def analyze_video(mp4_video_path: str) -> str:
     with open(mp4_video_path, "rb") as f:
         video_bytes = f.read()
         response = client.models.generate_content(
-            model="gemini-2.5-pro",
+            model="gemini-3-flash-preview",
             contents=[
                 types.Part.from_bytes(data=video_bytes, mime_type="video/mp4"),
                 "Analyze this video in detail and describe its key elements, context, and any notable aspects.",
@@ -92,7 +92,7 @@ def analyze_video(mp4_video_path: str) -> str:
 def generate_image(prompt: str, image_path: str) -> None:
     response = client.models.generate_content(
         # IMPORTANT: only this gemini model supports image generation
-        model="gemini-2.0-flash-preview-image-generation",
+        model="gemini-3.1-flash-image-preview",
         contents=prompt,
         config=types.GenerateContentConfig(response_modalities=['TEXT', 'IMAGE']))
 
