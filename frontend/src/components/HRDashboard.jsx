@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../api";
 
 function HRDashboard() {
+  const navigate = useNavigate();
   const [hrUser, setHrUser] = useState(null);
   const [activeTab, setActiveTab] = useState("uid"); // 'uid' | 'role'
   const [loading, setLoading] = useState(false);
@@ -36,8 +38,13 @@ function HRDashboard() {
   }, []);
 
   const handleLogout = async () => {
-    await fetch(`${API_BASE_URL}/hr/logout/`, { method: "POST", credentials: "include" });
-    window.location.href = "/hr-login";
+    setLoading(true);
+    try {
+      await fetch(`${API_BASE_URL}/hr/logout/`, { method: "POST", credentials: "include" });
+    } catch (e) {
+      console.error(e);
+    }
+    navigate("/");
   };
 
   const handleUidSearch = async (e) => {
