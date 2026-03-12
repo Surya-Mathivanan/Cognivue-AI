@@ -127,14 +127,18 @@ def _is_cross_domain_setup():
 if _is_cross_domain_setup():
     SESSION_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SECURE = True
 else:
     # Strict localhost HTTP development
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SECURE = False
 
 SESSION_COOKIE_HTTPONLY = True
 
-CSRF_TRUSTED_ORIGINS = [FRONTEND_URL, 'http://localhost:3000', 'http://localhost:8000']
+CSRF_TRUSTED_ORIGINS = [FRONTEND_URL, 'http://localhost:3000', 'http://localhost:8000', 'https://cognivue-aii.vercel.app']
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 
@@ -144,6 +148,7 @@ _extra_origins = os.environ.get('CORS_ORIGINS', '')
 CORS_ALLOWED_ORIGINS = list(filter(None, {
     'http://localhost:3000',
     'http://localhost:8000',
+    'https://cognivue-aii.vercel.app',
     FRONTEND_URL,
     f'https://{RENDER_EXTERNAL_HOSTNAME}' if RENDER_EXTERNAL_HOSTNAME else '',
     *[o.strip().rstrip('/') for o in _extra_origins.split(',') if o.strip()],
