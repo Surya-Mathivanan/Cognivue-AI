@@ -153,11 +153,14 @@ If you did not request this, please ignore this email.
 © 2026 Cognive AI. All rights reserved.
 """
 
-    send_mail(
-        subject=OTP_EMAIL_SUBJECT,
-        message=plain_text,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[to_email],
-        html_message=html_body,
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            subject=OTP_EMAIL_SUBJECT,
+            message=plain_text,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[to_email],
+            html_message=html_body,
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"Email error: {e}")
