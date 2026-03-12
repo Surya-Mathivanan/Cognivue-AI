@@ -217,7 +217,7 @@ def hr_login(request):
 
 # ─── HR Logout ────────────────────────────────────────────────────────────────
 @csrf_exempt
-@require_http_methods(['POST'])
+@require_http_methods(['POST', 'OPTIONS'])
 def hr_logout(request):
     """Logout HR user by clearing session."""
     request.session.pop('hr_user_id', None)

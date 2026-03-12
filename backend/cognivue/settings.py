@@ -121,14 +121,17 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7   # 7 days
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
 
-def _is_local(url: str) -> bool:
-    from urllib.parse import urlparse
-    hostname = (urlparse(url).hostname or '').lower()
-    return hostname in {'localhost', '127.0.0.1'} or hostname.endswith('.local')
+def _is_cross_domain_setup():
+    return bool(RENDER_EXTERNAL_HOSTNAME) or bool(os.environ.get('FRONTEND_URL', '').startswith('https://'))
 
-_local = _is_local(FRONTEND_URL)
-SESSION_COOKIE_SAMESITE = 'Lax' if _local else 'None'
-SESSION_COOKIE_SECURE = not _local
+if _is_cross_domain_setup():
+    SESSION_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SECURE = True
+else:
+    # Strict localhost HTTP development
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = False
+
 SESSION_COOKIE_HTTPONLY = True
 
 CSRF_TRUSTED_ORIGINS = [FRONTEND_URL, 'http://localhost:3000', 'http://localhost:8000']

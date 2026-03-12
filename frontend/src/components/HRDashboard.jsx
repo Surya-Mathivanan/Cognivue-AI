@@ -274,7 +274,7 @@ function HRDashboard() {
                   maxLength={10}
                 />
               </div>
-              <button type="submit" className="hr-search-btn" disabled={loading}>
+              <button type="submit" className="hr-search-btn" disabled={loading || !uidQuery.trim()}>
                 {loading ? "Searching..." : "Search"}
               </button>
             </form>

@@ -359,7 +359,11 @@ function HRLoginScreen() {
                       />
                     </div>
                     <button type="submit" className="hr-submit-btn" disabled={loading}>
-                      {loading ? "Signing in..." : "Sign In to HR Portal"}
+                      {loading ? (
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                          <div className="spinner"></div> Signing in...
+                        </div>
+                      ) : "Sign In to HR Portal"}
                     </button>
                   </form>
                 ) : (
@@ -409,7 +413,11 @@ function HRLoginScreen() {
                       />
                     </div>
                     <button type="submit" className="hr-submit-btn" disabled={loading}>
-                      {loading ? "Sending OTP..." : "Register & Send OTP"}
+                      {loading ? (
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                          <div className="spinner"></div> Sending OTP...
+                        </div>
+                      ) : "Register & Send OTP"}
                     </button>
                   </form>
                 )}
