@@ -110,8 +110,7 @@ function HRLoginScreen() {
           {
             name: data.name || regForm.name,
             otp: data.otp_code,
-            to_email: data.email,
-            email: data.email
+            to_email: data.email
           },
           "rr1wezDDwlBE7Hoix" // Replace with your EmailJS public key
         );
@@ -167,15 +166,14 @@ function HRLoginScreen() {
       
       try {
         await emailjs.send(
-          "service_xxxx", // Replace with your EmailJS service ID
-          "template_xxxx", // Replace with your EmailJS template ID
+          "service_uwyuqla", // Replace with your EmailJS service ID
+          "template_no2igus", // Replace with your EmailJS template ID
           {
             name: data.name || "HR Professional",
             otp: data.otp_code,
-            to_email: data.email,
-            email: data.email
+            to_email: data.email
           },
-          "public_key" // Replace with your EmailJS public key
+          "rr1wezDDwlBE7Hoix" // Replace with your EmailJS public key
         );
         setOtpCode("");
         startOtpTimer();
