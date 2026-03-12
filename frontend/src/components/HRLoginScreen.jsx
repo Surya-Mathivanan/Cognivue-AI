@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import emailjs from "@emailjs/browser";
 import { API_BASE_URL } from "../api";
 
 function HRLoginScreen() {
@@ -101,10 +102,27 @@ function HRLoginScreen() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Registration failed"); return; }
-      setOtpEmail(regForm.email);
-      setStep("otp");
-      startOtpTimer();
-      setSuccessMsg("OTP sent! Check your email inbox.");
+      
+      try {
+        await emailjs.send(
+          "service_uwyuqla", // Replace with your EmailJS service ID
+          "template_no2igus", // Replace with your EmailJS template ID
+          {
+            name: data.name || regForm.name,
+            otp: data.otp_code,
+            to_email: data.email,
+            email: data.email
+          },
+          "rr1wezDDwlBE7Hoix" // Replace with your EmailJS public key
+        );
+        setOtpEmail(regForm.email);
+        setStep("otp");
+        startOtpTimer();
+        setSuccessMsg("OTP sent! Check your email inbox.");
+      } catch (err) {
+        setError("Failed to send OTP via EmailJS.");
+        console.error("EmailJS Error:", err);
+      }
     } catch (err) {
       setError("Network error. Please try again.");
     } finally {
@@ -134,20 +152,38 @@ function HRLoginScreen() {
     }
   };
 
-  const handleResendOtp = async () => {
+  const handleResendOtp = async (emailToUse) => {
+    const targetEmail = typeof emailToUse === 'string' ? emailToUse : otpEmail;
     setError(""); setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/hr/resend-otp/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: otpEmail }),
+        body: JSON.stringify({ email: targetEmail }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Failed to resend OTP"); return; }
-      setOtpCode("");
-      startOtpTimer();
-      setSuccessMsg("New OTP sent! Check your email.");
+      
+      try {
+        await emailjs.send(
+          "service_xxxx", // Replace with your EmailJS service ID
+          "template_xxxx", // Replace with your EmailJS template ID
+          {
+            name: data.name || "HR Professional",
+            otp: data.otp_code,
+            to_email: data.email,
+            email: data.email
+          },
+          "public_key" // Replace with your EmailJS public key
+        );
+        setOtpCode("");
+        startOtpTimer();
+        setSuccessMsg("New OTP sent! Check your email.");
+      } catch (err) {
+        setError("Failed to resend OTP via EmailJS.");
+        console.error("EmailJS Error:", err);
+      }
     } catch (err) {
       setError("Network error. Please try again.");
     } finally {
@@ -172,7 +208,7 @@ function HRLoginScreen() {
           setActiveTab("register");
           setStep("otp");
           // Resend OTP
-          await handleResendOtp();
+          await handleResendOtp(loginForm.email);
           return;
         }
         setError(data.error || "Login failed");

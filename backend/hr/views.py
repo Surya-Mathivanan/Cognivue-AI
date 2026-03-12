@@ -73,15 +73,11 @@ def hr_register(request):
     otp_code = OTPRecord.generate_otp()
     OTPRecord.objects.create(email=email, otp_code=otp_code)
 
-    try:
-        send_otp_email(to_email=email, otp_code=otp_code, hr_name=name)
-    except Exception as e:
-        print(f"Error sending OTP email: {e}")
-        return JsonResponse({'error': 'Failed to send OTP email. Please check your email address.'}, status=500)
-
     return JsonResponse({
-        'message': 'OTP sent successfully. Please check your email.',
+        'message': 'Registration successful. OTP generated.',
         'email': email,
+        'otp_code': otp_code,
+        'name': hr_user.name
     })
 
 
@@ -106,13 +102,12 @@ def hr_resend_otp(request):
     otp_code = OTPRecord.generate_otp()
     OTPRecord.objects.create(email=email, otp_code=otp_code)
 
-    try:
-        send_otp_email(to_email=email, otp_code=otp_code, hr_name=hr_user.name)
-    except Exception as e:
-        print(f"Error resending OTP email: {e}")
-        return JsonResponse({'error': 'Failed to send OTP email.'}, status=500)
-
-    return JsonResponse({'message': 'OTP resent successfully. Please check your email.'})
+    return JsonResponse({
+        'message': 'OTP generated successfully.',
+        'email': email,
+        'otp_code': otp_code,
+        'name': hr_user.name
+    })
 
 
 # ─── HR Verify OTP ────────────────────────────────────────────────────────────
