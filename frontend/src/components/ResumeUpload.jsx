@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import LoadingAnimation from './LoadingAnimation';
-import { getApiUrl } from '../api';
+import { getApiUrl, getAuthHeaders } from '../api';
 
 function ResumeUpload({ setCurrentView, setInterviewData }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -45,6 +45,7 @@ function ResumeUpload({ setCurrentView, setInterviewData }) {
       const response = await fetch(getApiUrl('/api/upload-resume/'), {
         method: 'POST',
         credentials: 'include',
+        headers: getAuthHeaders(),
         body: formData
       });
 

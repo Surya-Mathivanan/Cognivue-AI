@@ -26,14 +26,36 @@ from werkzeug.utils import secure_filename
 from interviews.models import InterviewSession
 
 
-# ─── Helper: API login required ───────────────────────────────────────────────
+# ─── Helper: API login required (session OR JWT Bearer token) ─────────────────
 def api_login_required(view_func):
-    """Returns 401 JSON instead of redirect for unauthenticated API requests."""
+    """
+    Returns 401 JSON for unauthenticated requests.
+    Accepts EITHER:
+      - Django session cookie  (local dev / same-domain)
+      - Authorization: Bearer <jwt>  (cross-domain Vercel ↔ Render)
+    """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'error': 'Authentication required'}, status=401)
-        return view_func(request, *args, **kwargs)
+        # 1. Check Django session first (local dev / same-domain)
+        if request.user.is_authenticated:
+            return view_func(request, *args, **kwargs)
+
+        # 2. Try JWT Bearer token from Authorization header
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+            from accounts.jwt_utils import decode_token
+            from accounts.models import User as UserModel
+            payload = decode_token(token)
+            if payload:
+                try:
+                    user = UserModel.objects.get(pk=payload['user_id'])
+                    request.user = user
+                    return view_func(request, *args, **kwargs)
+                except UserModel.DoesNotExist:
+                    pass
+
+        return JsonResponse({'error': 'Authentication required'}, status=401)
     return wrapper
 
 

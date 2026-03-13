@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import LoadingAnimation from './LoadingAnimation';
-import { getApiUrl } from '../api';
+import { getApiUrl, getAuthHeaders } from '../api';
 
 function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
   const [questions, setQuestions] = useState([]);
@@ -95,7 +95,7 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
     try {
       const response = await fetch(getApiUrl('/api/generate-questions/'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         credentials: 'include',
         body: JSON.stringify(interviewData)
       });
@@ -150,7 +150,7 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
     try {
       await fetch(getApiUrl('/api/submit-answer/'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         credentials: 'include',
         body: JSON.stringify({
           session_id: sessionId,
@@ -182,7 +182,7 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
     try {
       const response = await fetch(getApiUrl('/api/complete-interview/'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         credentials: 'include',
         body: JSON.stringify({ session_id: sessionId })
       });

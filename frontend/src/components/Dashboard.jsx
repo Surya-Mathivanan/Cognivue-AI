@@ -6,7 +6,7 @@ import FeedbackDashboard from './FeedbackDashboard';
 import SessionHistory from './SessionHistory';
 import SessionDetailPage from './SessionDetailPage';
 import UserProfile from './UserProfile';
-import { getApiUrl } from '../api';
+import { getApiUrl, getAuthHeaders, removeToken } from '../api';
 
 function Dashboard({ user, setUser, theme, toggleTheme }) {
   const [currentView, setCurrentView] = useState('mode-selection');
@@ -19,15 +19,21 @@ function Dashboard({ user, setUser, theme, toggleTheme }) {
     try {
       const response = await fetch(getApiUrl('/api/logout/'), {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: getAuthHeaders(),
       });
 
-      if (response.ok) {
+      if (response.ok || response.status === 401) {
+        // Clear JWT token regardless of response (stateless logout)
+        removeToken();
         setUser(null);
       } else {
         console.error('Logout failed');
       }
     } catch (error) {
+      // Even on network error, clear the local token
+      removeToken();
+      setUser(null);
       console.error('Logout error:', error);
     }
   };

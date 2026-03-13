@@ -7,7 +7,7 @@ import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import HRLoginScreen from "./components/HRLoginScreen";
 import HRDashboard from "./components/HRDashboard";
-import { getApiUrl } from "./api";
+import { getApiUrl, saveToken, getToken, getAuthHeaders } from "./api";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -28,12 +28,25 @@ function App() {
   };
 
   useEffect(() => {
+    // ── Step 1: Check if Google OAuth just landed a ?token=<jwt> in the URL ──
+    // This happens when the backend redirects back after successful OAuth login.
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get("token");
+    if (urlToken) {
+      saveToken(urlToken);
+      // Remove ?token=... from the URL bar (clean URL, no page reload)
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+
+    // ── Step 2: Check if user is logged in (session OR stored JWT token) ──
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     fetch(getApiUrl("/api/user-info/"), {
       credentials: "include",
       signal: controller.signal,
+      headers: getAuthHeaders(),   // Sends Authorization: Bearer <token> if available
     })
       .then((response) => {
         if (response.ok) return response.json();

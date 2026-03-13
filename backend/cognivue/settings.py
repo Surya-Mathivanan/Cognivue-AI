@@ -22,7 +22,8 @@ for env_path in env_paths:
 
 # ─── Security ─────────────────────────────────────────────────────────────────
 SECRET_KEY = os.environ.get('SESSION_SECRET', 'django-insecure-dev-please-change-in-production')
-DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() in ('1', 'true', 'yes')
+# NOTE: Use DJANGO_DEBUG in Render. FLASK_DEBUG kept for backward compat but DJANGO_DEBUG takes priority.
+DEBUG = os.environ.get('DJANGO_DEBUG', os.environ.get('FLASK_DEBUG', 'True')).lower() in ('1', 'true', 'yes')
 
 # Allow all Render subdomains + localhost
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')
@@ -193,6 +194,9 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'noreply@cogniveai.com')
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '30'))  # Prevents Gunicorn worker timeout
 
+
+# ─── JWT (cross-domain auth: Vercel frontend ↔ Render backend) ───────────────
+JWT_SECRET = os.environ.get('JWT_SECRET', SECRET_KEY)  # Falls back to Django SECRET_KEY for local dev
 
 # ─── Misc ─────────────────────────────────────────────────────────────────────
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

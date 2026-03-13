@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getApiUrl, updateUserProfile } from "../api";
+import { getApiUrl, updateUserProfile, getAuthHeaders } from "../api";
 
 function UserProfile({ user, setCurrentView }) {
   const [analytics, setAnalytics] = useState(null);
@@ -51,7 +51,7 @@ function UserProfile({ user, setCurrentView }) {
   };
 
   useEffect(() => {
-    fetch(getApiUrl("/api/analytics/"), { credentials: "include" })
+    fetch(getApiUrl("/api/analytics/"), { credentials: "include", headers: getAuthHeaders() })
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setAnalytics(data); })
       .catch(() => {});

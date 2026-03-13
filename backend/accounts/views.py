@@ -13,6 +13,7 @@ from django.views import View
 from oauthlib.oauth2 import WebApplicationClient
 
 from accounts.models import User
+from accounts.jwt_utils import create_token
 
 GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
@@ -50,7 +51,7 @@ class GoogleLoginView(View):
 
 
 class GoogleCallbackView(View):
-    """Handle Google OAuth callback, create/get user, set session."""
+    """Handle Google OAuth callback, create/get user, issue JWT token."""
 
     def get(self, request):
         code = request.GET.get('code')
@@ -116,11 +117,16 @@ class GoogleCallbackView(View):
                 if updated:
                     user.save(update_fields=['avatar_url', 'username'])
 
-            # Log the user in (sets session cookie)
+            # Also set the Django session (for same-domain / local dev access)
             login(request, user, backend='accounts.backends.EmailBackend')
             print(f"User logged in: {email} (new={created})")
 
-            return redirect(settings.FRONTEND_URL)
+            # Generate a JWT token to pass to the frontend cross-domain.
+            # The frontend reads ?token=... from the URL, stores in localStorage,
+            # and sends Authorization: Bearer <token> on every API request.
+            token = create_token(user.id)
+            frontend_url = settings.FRONTEND_URL.rstrip('/')
+            return redirect(f"{frontend_url}/?token={token}")
 
         except Exception as e:
             print(f"Error in OAuth callback: {e}")

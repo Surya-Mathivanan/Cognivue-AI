@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LoadingAnimation from './LoadingAnimation';
 import Loader from './Loader';
-import { getApiUrl } from '../api';
+import { getApiUrl, getAuthHeaders } from '../api';
 
 function SessionHistory({ setCurrentView, setFeedbackData, onViewFullDetails }) {
   const [sessions, setSessions] = useState([]);
@@ -18,8 +18,8 @@ function SessionHistory({ setCurrentView, setFeedbackData, onViewFullDetails }) 
     const fetchData = async () => {
       try {
         const [historyRes, analyticsRes] = await Promise.all([
-          fetch(getApiUrl('/api/session-history/'), { credentials: 'include', signal: controller.signal }),
-          fetch(getApiUrl('/api/analytics/'), { credentials: 'include', signal: controller.signal }),
+          fetch(getApiUrl('/api/session-history/'), { credentials: 'include', headers: getAuthHeaders(), signal: controller.signal }),
+          fetch(getApiUrl('/api/analytics/'), { credentials: 'include', headers: getAuthHeaders(), signal: controller.signal }),
         ]);
 
         if (historyRes.ok) {
@@ -44,7 +44,7 @@ function SessionHistory({ setCurrentView, setFeedbackData, onViewFullDetails }) 
     setDetailLoading(true);
     setSelectedSession(sessionId);
     try {
-      const res = await fetch(getApiUrl(`/api/session/${sessionId}/`), { credentials: 'include' });
+      const res = await fetch(getApiUrl(`/api/session/${sessionId}/`), { credentials: 'include', headers: getAuthHeaders() });
       if (res.ok) {
         const data = await res.json();
         setSessionDetail(data);

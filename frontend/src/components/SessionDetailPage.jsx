@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import LoadingAnimation from './LoadingAnimation';
-import { getApiUrl } from '../api';
+import { getApiUrl, getAuthHeaders } from '../api';
 
 function SessionDetailPage({ sessionId, setCurrentView }) {
   const [session, setSession] = useState(null);
@@ -10,7 +10,7 @@ function SessionDetailPage({ sessionId, setCurrentView }) {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const res = await fetch(getApiUrl(`/api/session/${sessionId}/`), { credentials: 'include' });
+        const res = await fetch(getApiUrl(`/api/session/${sessionId}/`), { credentials: 'include', headers: getAuthHeaders() });
         if (res.ok) {
           const data = await res.json();
           setSession(data);
