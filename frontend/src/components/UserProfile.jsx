@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { getApiUrl, updateUserProfile, getAuthHeaders } from "../api";
+import Loader from "./Loader";
 
 function UserProfile({ user, setCurrentView }) {
   const [analytics, setAnalytics] = useState(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(true);
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -51,10 +53,12 @@ function UserProfile({ user, setCurrentView }) {
   };
 
   useEffect(() => {
+    setLoadingAnalytics(true);
     fetch(getApiUrl("/api/analytics/"), { credentials: "include", headers: getAuthHeaders() })
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setAnalytics(data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoadingAnalytics(false));
   }, []);
 
   const copyUID = () => {
@@ -130,7 +134,11 @@ function UserProfile({ user, setCurrentView }) {
       <div className="profile-stats-section">
         <h2 className="profile-section-title">Performance Overview</h2>
 
-        {analytics ? (
+        {loadingAnalytics ? (
+          <div className="profile-stats-loading" style={{ display: 'flex', justifyContent: 'center', padding: '2rem 0' }}>
+            <Loader message="Loading analytics..." />
+          </div>
+        ) : analytics ? (
           <>
             <div className="profile-stats-grid">
               <div className="profile-stat-card">

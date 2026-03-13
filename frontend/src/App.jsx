@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginScreen from "./components/LoginScreen";
 import Dashboard from "./components/Dashboard";
-import LoadingAnimation from "./components/LoadingAnimation";
+import Loader from "./components/Loader";
 import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import HRLoginScreen from "./components/HRLoginScreen";
@@ -77,7 +77,7 @@ function App() {
   if (loading) {
     return (
       <div className="loading-container">
-        <LoadingAnimation message="Initializing application..." size="large" />
+        <Loader message="Initializing application..." />
       </div>
     );
   }

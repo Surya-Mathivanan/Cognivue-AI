@@ -4,170 +4,160 @@ import styled from 'styled-components';
 const Loader = () => {
   return (
     <StyledWrapper>
-      <div className="loader">
-        <svg width={100} height={100} viewBox="0 0 100 100">
-          <defs>
-            <mask id="clipping">
-              <polygon points="0,0 100,0 100,100 0,100" fill="black" />
-              <polygon points="25,25 75,25 50,75" fill="white" />
-              <polygon points="50,25 75,75 25,75" fill="white" />
-              <polygon points="35,35 65,35 50,65" fill="white" />
-              <polygon points="35,35 65,35 50,65" fill="white" />
-              <polygon points="35,35 65,35 50,65" fill="white" />
-              <polygon points="35,35 65,35 50,65" fill="white" />
-            </mask>
-          </defs>
-        </svg>
-        <div className="box" />
+      <div className="loader-wrapper">
+        <span className="loader-letter">G</span>
+        <span className="loader-letter">e</span>
+        <span className="loader-letter">n</span>
+        <span className="loader-letter">e</span>
+        <span className="loader-letter">r</span>
+        <span className="loader-letter">a</span>
+        <span className="loader-letter">t</span>
+        <span className="loader-letter">i</span>
+        <span className="loader-letter">n</span>
+        <span className="loader-letter">g</span>
+        <div className="loader" />
       </div>
     </StyledWrapper>
   );
 }
 
 const StyledWrapper = styled.div`
-  .loader {
-    --color-one: #ffbf48;
-    --color-two: #be4a1d;
-    --color-three: #ffbf4780;
-    --color-four: #bf4a1d80;
-    --color-five: #ffbf4740;
-    --time-animation: 2s;
-    --size: 1; /* You can change the size */
+  .loader-wrapper {
     position: relative;
-    border-radius: 50%;
-    transform: scale(var(--size));
-    box-shadow:
-      0 0 25px 0 var(--color-three),
-      0 20px 50px 0 var(--color-four);
-    animation: colorize calc(var(--time-animation) * 3) ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    width: auto;
+    margin: 2rem;
+
+    font-family: "Poppins", sans-serif;
+    font-size: 1.6em;
+    font-weight: 600;
+    user-select: none;
+    color: #fff;
+
+    scale: 2;
   }
 
-  .loader::before {
+  .loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+
+    background-color: transparent;
+    mask: repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 6px,
+      black 7px,
+      black 8px
+    );
+  }
+
+  .loader::after {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border-top: solid 1px var(--color-one);
-    border-bottom: solid 1px var(--color-two);
-    background: linear-gradient(180deg, var(--color-five), var(--color-four));
-    box-shadow:
-      inset 0 10px 10px 0 var(--color-three),
-      inset 0 -10px 10px 0 var(--color-four);
-  }
+    width: 100%;
+    height: 100%;
 
-  .loader .box {
-    width: 100px;
-    height: 100px;
-    background: linear-gradient(
-      180deg,
-      var(--color-one) 30%,
-      var(--color-two) 70%
+    background-image: radial-gradient(circle at 50% 50%, #ff0 0%, transparent 50%),
+      radial-gradient(circle at 45% 45%, #f00 0%, transparent 45%),
+      radial-gradient(circle at 55% 55%, #0ff 0%, transparent 45%),
+      radial-gradient(circle at 45% 55%, #0f0 0%, transparent 45%),
+      radial-gradient(circle at 55% 45%, #00f 0%, transparent 45%);
+    mask: radial-gradient(
+      circle at 50% 50%,
+      transparent 0%,
+      transparent 10%,
+      black 25%
     );
-    mask: url(#clipping);
-    -webkit-mask: url(#clipping);
+    animation:
+      transform-animation 2s infinite alternate,
+      opacity-animation 4s infinite;
+    animation-timing-function: cubic-bezier(0.6, 0.8, 0.5, 1);
   }
 
-  .loader svg {
-    position: absolute;
-  }
-
-  .loader svg #clipping {
-    filter: contrast(15);
-    animation: roundness calc(var(--time-animation) / 2) linear infinite;
-  }
-
-  .loader svg #clipping polygon {
-    filter: blur(7px);
-  }
-
-  .loader svg #clipping polygon:nth-child(1) {
-    transform-origin: 75% 25%;
-    transform: rotate(90deg);
-  }
-
-  .loader svg #clipping polygon:nth-child(2) {
-    transform-origin: 50% 50%;
-    animation: rotation var(--time-animation) linear infinite reverse;
-  }
-
-  .loader svg #clipping polygon:nth-child(3) {
-    transform-origin: 50% 60%;
-    animation: rotation var(--time-animation) linear infinite;
-    animation-delay: calc(var(--time-animation) / -3);
-  }
-
-  .loader svg #clipping polygon:nth-child(4) {
-    transform-origin: 40% 40%;
-    animation: rotation var(--time-animation) linear infinite reverse;
-  }
-
-  .loader svg #clipping polygon:nth-child(5) {
-    transform-origin: 40% 40%;
-    animation: rotation var(--time-animation) linear infinite reverse;
-    animation-delay: calc(var(--time-animation) / -2);
-  }
-
-  .loader svg #clipping polygon:nth-child(6) {
-    transform-origin: 60% 40%;
-    animation: rotation var(--time-animation) linear infinite;
-  }
-
-  .loader svg #clipping polygon:nth-child(7) {
-    transform-origin: 60% 40%;
-    animation: rotation var(--time-animation) linear infinite;
-    animation-delay: calc(var(--time-animation) / -1.5);
-  }
-
-  @keyframes rotation {
+  @keyframes transform-animation {
     0% {
-      transform: rotate(0deg);
+      transform: translate(-55%);
     }
     100% {
-      transform: rotate(360deg);
+      transform: translate(55%);
     }
   }
 
-  @keyframes roundness {
+  @keyframes opacity-animation {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    65% {
+      opacity: 0;
+    }
+  }
+
+  .loader-letter {
+    display: inline-block;
+    opacity: 0;
+    animation: loader-letter-anim 4s infinite linear;
+    z-index: 2;
+  }
+
+  .loader-letter:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .loader-letter:nth-child(2) {
+    animation-delay: 0.205s;
+  }
+  .loader-letter:nth-child(3) {
+    animation-delay: 0.31s;
+  }
+  .loader-letter:nth-child(4) {
+    animation-delay: 0.415s;
+  }
+  .loader-letter:nth-child(5) {
+    animation-delay: 0.521s;
+  }
+  .loader-letter:nth-child(6) {
+    animation-delay: 0.626s;
+  }
+  .loader-letter:nth-child(7) {
+    animation-delay: 0.731s;
+  }
+  .loader-letter:nth-child(8) {
+    animation-delay: 0.837s;
+  }
+  .loader-letter:nth-child(9) {
+    animation-delay: 0.942s;
+  }
+  .loader-letter:nth-child(10) {
+    animation-delay: 1.047s;
+  }
+
+  @keyframes loader-letter-anim {
     0% {
-      filter: contrast(15);
+      opacity: 0;
+    }
+    5% {
+      opacity: 1;
+      text-shadow: 0 0 4px #fff;
+      transform: scale(1.1) translateY(-2px);
     }
     20% {
-      filter: contrast(3);
-    }
-    40% {
-      filter: contrast(3);
-    }
-    60% {
-      filter: contrast(15);
+      opacity: 0.2;
     }
     100% {
-      filter: contrast(15);
+      opacity: 0;
     }
-  }
-
-  @keyframes colorize {
-    0% {
-      filter: hue-rotate(0deg);
-    }
-    20% {
-      filter: hue-rotate(-30deg);
-    }
-    40% {
-      filter: hue-rotate(-60deg);
-    }
-    60% {
-      filter: hue-rotate(-90deg);
-    }
-    80% {
-      filter: hue-rotate(-45deg);
-    }
-    100% {
-      filter: hue-rotate(0deg);
-    }
-  }
-`;
+  }`;
 
 export default Loader;

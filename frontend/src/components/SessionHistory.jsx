@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import LoadingAnimation from './LoadingAnimation';
 import Loader from './Loader';
+// import Loader from './Loader';
 import { getApiUrl, getAuthHeaders } from '../api';
 
 function SessionHistory({ setCurrentView, setFeedbackData, onViewFullDetails }) {
@@ -222,7 +222,7 @@ function SessionHistory({ setCurrentView, setFeedbackData, onViewFullDetails }) 
           <div className="history-detail">
             {detailLoading ? (
               <div className="detail-loading">
-                <LoadingAnimation message="Loading details..." size="medium" />
+                <Loader message="Loading details..." />
               </div>
             ) : sessionDetail ? (
               <div className="detail-content">

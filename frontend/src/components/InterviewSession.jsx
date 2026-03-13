@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import LoadingAnimation from './LoadingAnimation';
+import Loader from './Loader';
 import { getApiUrl, getAuthHeaders } from '../api';
 
 function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
@@ -255,9 +255,7 @@ function InterviewSession({ interviewData, setCurrentView, setFeedbackData }) {
   if (loading) {
     return (
       <div className="dashboard-main">
-        <LoadingAnimation/>
-
-        {/* ========================================================================================================== */}
+        <Loader message="Loading questions..." />
       </div>
     );
   }

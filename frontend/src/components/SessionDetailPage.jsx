@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import LoadingAnimation from './LoadingAnimation';
+import Loader from './Loader';
 import { getApiUrl, getAuthHeaders } from '../api';
 
 function SessionDetailPage({ sessionId, setCurrentView }) {
@@ -60,7 +60,7 @@ function SessionDetailPage({ sessionId, setCurrentView }) {
   if (loading) {
     return (
       <div className="dashboard-main">
-        <LoadingAnimation message="Loading full session details..." size="large" />
+        <Loader message="Loading full session details..." />
       </div>
     );
   }

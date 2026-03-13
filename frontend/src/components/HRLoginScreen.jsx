@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import emailjs from "@emailjs/browser";
 import { API_BASE_URL } from "../api";
+import Loader from "./Loader";
 
 function HRLoginScreen() {
   const [activeTab, setActiveTab] = useState("login"); // 'login' | 'register'
@@ -294,13 +295,15 @@ function HRLoginScreen() {
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    className="hr-submit-btn"
-                    disabled={loading || otpExpired || otpCode.length !== 6}
-                  >
-                    {loading ? "Verifying..." : "Verify & Access Portal"}
-                  </button>
+                  {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', transform: 'scale(0.5)' }}>
+                      <Loader message="Verifying..." />
+                    </div>
+                  ) : (
+                    <button type="submit" className="hr-submit-btn" disabled={otpExpired || otpCode.length !== 6}>
+                      Verify & Access Portal
+                    </button>
+                  )}
                 </form>
 
                 {otpExpired && (
@@ -358,13 +361,15 @@ function HRLoginScreen() {
                         required
                       />
                     </div>
-                    <button type="submit" className="hr-submit-btn" disabled={loading}>
-                      {loading ? (
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                          <div className="spinner"></div> Signing in...
-                        </div>
-                      ) : "Sign In to HR Portal"}
-                    </button>
+                    {loading ? (
+                      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', transform: 'scale(0.5)' }}>
+                        <Loader message="Authenticating..." />
+                      </div>
+                    ) : (
+                      <button type="submit" className="hr-submit-btn">
+                        Sign In to HR Portal
+                      </button>
+                    )}
                   </form>
                 ) : (
                   <form onSubmit={handleRegister}>
@@ -412,13 +417,15 @@ function HRLoginScreen() {
                         required
                       />
                     </div>
-                    <button type="submit" className="hr-submit-btn" disabled={loading}>
-                      {loading ? (
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                          <div className="spinner"></div> Sending OTP...
-                        </div>
-                      ) : "Register & Send OTP"}
-                    </button>
+                    {loading ? (
+                      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', transform: 'scale(0.5)' }}>
+                        <Loader message="Sending OTP..." />
+                      </div>
+                    ) : (
+                      <button type="submit" className="hr-submit-btn">
+                        Register & Send OTP
+                      </button>
+                    )}
                   </form>
                 )}
               </>
