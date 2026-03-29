@@ -1,0 +1,656 @@
+================================================================================
+                         COGNIVUE AI — PROJECT DETAILS
+================================================================================
+
+Project Name  : Cognivue AI
+Type          : Full-Stack Web Application (AI-Powered Interview Coach)
+Frontend      : React (JSX) + Vite
+Backend       : Django (Python)
+AI Engine     : Google Gemini API (gemini-3-flash-preview)
+Auth          : Google OAuth 2.0 + JWT (students) | Email + OTP (HR)
+Deployment    : Frontend → Vercel | Backend → Render | DB → PostgreSQL
+
+================================================================================
+                              PROJECT CORE CONCEPT
+================================================================================
+
+Cognivue AI is an AI-powered mock interview platform with two user types:
+
+  1. STUDENTS / CANDIDATES
+     - Sign in via Google OAuth
+     - Get a unique Candidate UID (format: 22BAD + 5 digits, e.g. 22BAD12345)
+     - Practice mock interviews in two modes:
+         a) Resume-Based  — Upload a PDF resume; AI extracts skills & projects
+                            and generates hyper-personalized questions
+         b) Role-Based    — Pick a job role (e.g. Frontend Developer) and
+                            experience level; AI generates domain-specific Qs
+     - Answer questions via text or voice (Web Speech API)
+     - Receive AI-scored feedback: overall score, category breakdown,
+       strengths, improvements, and a detailed written analysis
+     - View full session history with pagination and per-session drill-down
+     - Manage a profile (UID, college, degree, branch, skills, contact info)
+
+  2. HR PROFESSIONALS
+     - Register with email + OTP verification (via EmailJS)
+     - Log in via email/password
+     - Search candidates by UID or by Job Role
+     - View a candidate's full interview Q&A, scores, and AI feedback
+     - Used for talent screening — candidates share their UID with recruiters
+
+================================================================================
+                           FRONTEND PAGES & COMPONENTS
+================================================================================
+
+The frontend is a Single-Page Application. Routing is handled by
+react-router-dom. The Dashboard component uses an internal view-state
+switch (currentView) to render sub-pages without changing the URL.
+
+--------------------------------------------------------------------------------
+ROUTE: /  (LoginScreen.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/LoginScreen.jsx
+Purpose : Entry point for student users. Shown when no authenticated session
+          is detected.
+
+Specifications:
+  - Animated Canvas particle background: 80 floating purple dots that drift
+    and connect with faint lines when within 150px of each other.
+  - Three gradient "orb" decorative elements for depth.
+  - Glassmorphism login card with:
+      - CogniVue AI logo (SVG with purple-to-cyan gradient)
+      - "Continue with Google" button — redirects to /auth/google/ on backend
+      - Trust badges: Secure | AI Powered | Free
+      - "HR Entry" button — navigates to /hr-login
+      - Links to /terms and /privacy
+      - Theme toggle (Dark/Light mode)
+  - On load: checks URL for ?token=<jwt> from Google OAuth redirect, saves it
+    to localStorage, then cleans the URL.
+
+--------------------------------------------------------------------------------
+ROUTE: /hr-login  (HRLoginScreen.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/HRLoginScreen.jsx
+Purpose : Login/Registration page exclusively for HR professionals.
+
+Specifications:
+  - Canvas particle animation (green-tinted, 60 particles) as background.
+  - Tab-based UI with two tabs: Login | Register
+  - LOGIN TAB:
+      - Email + Password fields
+      - Calls POST /hr/login/
+      - On success: navigates to /hr-admin
+      - If account is unverified: auto-switches to OTP step and resends OTP
+  - REGISTER TAB:
+      - Full Name, Work Email, Company Name, Password fields
+      - Calls POST /hr/register/ → backend generates OTP
+      - Uses EmailJS SDK to send OTP email to the recruiter
+      - Switches to OTP Verification step
+  - OTP VERIFICATION STEP:
+      - 6-digit numeric input
+      - 60-second countdown timer (turns yellow <10s, red when expired)
+      - "Resend OTP" button appears when expired
+      - Calls POST /hr/verify-otp/ → navigates to /hr-admin on success
+  - "Back to Student Login" link at bottom → navigates to /
+  - Loading states use the Loader component
+
+--------------------------------------------------------------------------------
+ROUTE: /hr-admin  (HRDashboard.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/HRDashboard.jsx
+Purpose : Full dashboard for HR professionals to search and review candidates.
+
+Specifications:
+  - Header: Cognivue AI HR Portal branding, logged-in HR user chip, Logout btn
+  - On load: fetches HR user info (/hr/me/) and available roles (/hr/roles/)
+  - Two-tab search interface:
+
+    TAB 1 — SEARCH BY UID:
+      - Text input (auto-uppercase, max 10 chars) for candidate UID
+      - Calls GET /hr/search/uid/?uid=<UID>
+      - Displays candidate profile card: name, UID badge, email, phone,
+        location, college, skills, and total completed interview count
+      - Lists all interview sessions for that candidate as clickable cards
+        (showing role, score, difficulty, duration, date)
+
+    TAB 2 — SEARCH BY ROLE:
+      - Dropdown populated from /hr/roles/ (all available interviewed roles)
+      - Calls GET /hr/search/role/?role=<role>
+      - Displays count of matching candidates and candidate cards with
+        name, UID badge, score, difficulty, and date
+
+  - SESSION DETAIL VIEW (replaces main page when a session card is clicked):
+      - Calls GET /hr/session/<id>/
+      - Shows: candidate avatar, name, UID, email, overall score (color-coded)
+      - Session info card: Role, Mode, Difficulty, Duration
+      - Candidate Contact Info card: phone, location, college, degree, branch, skills
+      - Category Scores card: bar chart visualization (Behavioral, Technical, Cultural)
+      - AI Feedback Summary paragraph
+      - Full Interview Q&A list with question categories and candidate answers
+      - "← Back to Results" button
+
+--------------------------------------------------------------------------------
+ROUTE: /terms  (TermsOfService.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/TermsOfService.jsx
+Purpose : Static legal page describing the platform's terms of use.
+
+Specifications:
+  - Standalone page (no sidebar, accessible without login)
+  - "Back to Home" button navigates to /
+  - Sections: Terms of Service overview, usage rules, limitations,
+    and platform policies
+  - Platform copyright footer
+
+--------------------------------------------------------------------------------
+ROUTE: /privacy  (PrivacyPolicy.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/PrivacyPolicy.jsx
+Purpose : Static legal page describing data handling and privacy practices.
+
+Specifications:
+  - Standalone page (no sidebar, accessible without login)
+  - "Back to Home" button navigates to /
+  - Sections:
+      - Overview: Google OAuth only, no password stored; resume stored
+        in protected uploads bucket
+      - Data Handling: HTTP-only session cookies, PostgreSQL storage on
+        Render, session deletion purges all related data
+      - Contact: support@cognivue.ai, GitHub link
+
+--------------------------------------------------------------------------------
+INTERNAL VIEW: mode-selection  (Dashboard.jsx — Home Screen)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/Dashboard.jsx (renderCurrentView case)
+Purpose : Landing screen shown after login. The main hub of the application.
+
+Specifications:
+  - Hero section: personalised greeting with user's name, app subtitle
+  - Quick Stats row: 2 Practice Modes | Gemini AI | Real-time Feedback | 10+ Roles
+  - Two Mode Cards (clickable, navigate to sub-views):
+      a) "Resume-Based Interview" (marked Popular)
+         - Bullets: tailored questions, project deep-dives, skill gap detection
+         - Feature tags: Resume Analysis, Personalized, Adaptive
+         - CTA: "Upload Resume →"
+      b) "Role-Based Interview"
+         - Bullets: 10+ roles (SWE, PM, Data Sci, etc.), 3 difficulty levels,
+           industry-standard question bank
+         - Feature tags: Role Specific, 3 Levels, Instant Start
+         - CTA: "Choose Role →"
+  - "How It Works" section: 3-step visual (Choose Mode → Answer → Get Scored)
+    with numbered step connectors
+
+--------------------------------------------------------------------------------
+INTERNAL VIEW: resume-upload  (ResumeUpload.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/ResumeUpload.jsx
+Purpose : PDF resume upload form — first step of the resume-based interview flow.
+
+Specifications:
+  - Styled drag-and-drop upload box (styled-components):
+      - Dashed purple border, click to browse files
+      - Accepts .pdf / application/pdf only
+      - Shows selected filename once a file is chosen
+  - Difficulty dropdown: Beginner | Intermediate | Advanced
+  - "Key Skills Identified" keyword tags shown after upload (if backend returns them)
+  - On submit: POSTs multipart/form-data to /api/upload-resume/
+  - Loading state: shows Loader with message "Processing your resume and
+    extracting keywords..."
+  - On success: stores interview data (mode, difficulty, keywords, filename)
+    and navigates to interview-setup view
+
+--------------------------------------------------------------------------------
+INTERNAL VIEW: role-selection  (RoleSelection.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/RoleSelection.jsx
+Purpose : Role and difficulty selector — first step of the role-based interview flow.
+
+Specifications:
+  - Two dropdowns:
+      1. Target Position — 10 role options:
+           Frontend Developer | Backend Developer | Full Stack Developer |
+           Data Scientist | Product Manager | UI/UX Designer |
+           DevOps Engineer | Mobile Developer | QA Engineer | Data Analyst
+      2. Experience Level — Beginner | Intermediate | Advanced
+  - "Start Interview" button navigates to interview-setup view
+  - No API call at this stage; just stores mode/role/difficulty in interviewData state
+
+--------------------------------------------------------------------------------
+INTERNAL VIEW: interview-setup  (InterviewSession.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/InterviewSession.jsx
+Purpose : The live interview interface. Displays one question at a time and
+          collects answers via text or voice.
+
+Specifications:
+  - On mount: calls POST /api/generate-questions/ with interviewData payload
+  - Questions are flattened into a unified list with category labels:
+      HR | Technical | Cultural Fit (role-mode) | Project (resume-mode)
+  - Loading state: Loader with "Loading questions..."
+  - Progress bar: shows "X of Y" questions with fill animation
+  - Question card: category badge + question text
+  - Answer area: large textarea
+  - Voice Recording (if Web Speech API is available):
+      - Uses webkitSpeechRecognition / SpeechRecognition
+      - Continuous mode with auto-restart on session end
+      - Appends live transcript to existing text in textarea
+      - Toggle button: "Start Recording" ↔ "Stop Recording"
+      - Handles permission denial, no-speech, and network errors
+  - Navigation buttons: "Previous" (if not first Q) + "Next Question" / "Complete Interview"
+  - Each answer saved via POST /api/submit-answer/ (session_id, question_index, answer)
+  - On last question: calls POST /api/complete-interview/ → receives feedback JSON
+    → navigates to feedback view
+
+--------------------------------------------------------------------------------
+INTERNAL VIEW: feedback  (FeedbackDashboard.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/FeedbackDashboard.jsx
+Purpose : Post-interview results screen with scores and AI-generated analysis.
+
+Specifications:
+  - Overall Performance: large SVG pie/ring chart (200px) in green (#238636)
+    showing overall_score percentage with contextual message:
+      ≥80%: "Excellent performance!"
+      ≥60%: "Good job!"
+      ≥40%: "Fair performance."
+      <40%:  "Keep practicing!"
+  - Performance Breakdown: three smaller ring charts (120px each):
+      💼 Behavioral Skills (hr_performance) — blue
+      ⚙️ Technical Expertise (technical_performance) — yellow
+      🤝 Culture Alignment (cultural_fit) — purple
+  - Feedback Grid (two columns):
+      Left:  "🌟 What You Excelled At" — strengths list
+      Right: "🎯 Growth Opportunities" — improvements list
+  - Detailed Analysis: full AI-generated paragraph
+  - Action buttons:
+      "Take Another Interview" → mode-selection
+      "Save Results" → window.print()
+
+--------------------------------------------------------------------------------
+INTERNAL VIEW: history  (SessionHistory.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/SessionHistory.jsx
+Purpose : Past interview sessions browser with analytics summary and
+          side-by-side detail preview.
+
+Specifications:
+  - On mount: fetches /api/session-history/ and /api/analytics/ in parallel
+  - Analytics Summary Cards (shown if total_sessions > 0):
+      Total Sessions | Average Score | Best Score | Resume-Based count |
+      Role-Based count
+      Scores are color-coded: ≥80 green | ≥60 amber | ≥40 orange | red
+  - Session List (left column):
+      - 3 sessions per page with Previous/Next pagination controls
+      - Each card shows: mode badge (📄 Resume / 🎯 Role), overall score
+        badge, role name, difficulty (color-coded), duration, date,
+        top strength preview, and "View Full Details →" button
+      - Clicking a card loads its detail in the right panel
+  - Session Detail Panel (right column):
+      - Fetches /api/session/<id>/ on card click
+      - Shows mode, difficulty, overall score, strengths list,
+        improvements list, and full Q&A with category badges and answers
+      - "View Full Feedback Report" button → navigates to feedback view
+      - Loading placeholder: Loader with "Loading details..."
+      - Empty state placeholder: "👈 Select a session to view details"
+
+--------------------------------------------------------------------------------
+INTERNAL VIEW: session-detail  (SessionDetailPage.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/SessionDetailPage.jsx
+Purpose : Full-page, standalone deep-dive view for a single interview session.
+          Accessed via "View Full Details →" button in SessionHistory.
+
+Specifications:
+  - Fetches /api/session/<sessionId>/ on mount
+  - Header card:
+      - Mode badge (📄 Resume-Based / 🎯 Role-Based)
+      - Session title (role name or experience level)
+      - Metadata row: difficulty tag (color-coded), duration, formatted date/time
+      - Score circle (border color matches score): percentage + label
+        (Excellent / Good / Fair / Needs Improvement)
+      - Category Scores: horizontal progress bars for each category score
+        (Behavioral, Technical, Cultural — key names humanized)
+  - Strengths & Improvements: two-column card grid
+  - Q&A Section: numbered cards (Q1, Q2, ...) each with:
+      - Question number + category badge
+      - Question text
+      - "Your Answer" section with user's response (or "No answer provided")
+  - Detailed Analysis paragraph from AI feedback
+  - Bottom actions: "← Back to History" and "Start New Interview"
+
+--------------------------------------------------------------------------------
+INTERNAL VIEW: profile  (UserProfile.jsx)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/UserProfile.jsx
+Purpose : Candidate's personal profile page with analytics and editable info.
+
+Specifications:
+  - Profile Hero:
+      - Avatar: Google profile picture or letter initial placeholder
+      - Name + email
+      - Candidate UID section: displays unique UID (e.g. 22BAD12345) with
+        1-click copy-to-clipboard button (shows checkmark for 2 seconds)
+      - Hint text: "Share your UID with HR recruiters..."
+  - Performance Overview:
+      - Fetches /api/analytics/ for stats
+      - 5 stat cards: Total Interviews | Best Score | Avg Score |
+        Resume Interviews | Role Interviews
+      - Difficulty Breakdown: cards for Beginner/Intermediate/Advanced
+        showing session count and average score per level
+  - Account Info section (read-only):
+      - Name | Email | Candidate ID | Login Method (Google OAuth badge)
+  - Contact & Professional Info section (editable):
+      - Displays: Phone Number | Location | Address | College/University |
+        Degree | Branch/Major | Skills
+      - "Edit Details" button toggles to edit mode (inline form inputs)
+      - "Save Changes" → PUT /api/update-profile/ | "Cancel" aborts
+
+================================================================================
+                           SHARED / UTILITY COMPONENTS
+================================================================================
+
+--------------------------------------------------------------------------------
+Loader.jsx
+--------------------------------------------------------------------------------
+File    : frontend/src/components/Loader.jsx
+Purpose : Universal loading animation used throughout the app.
+
+Specifications:
+  - Styled with styled-components
+  - Displays the word "Generating" in individual letter spans
+  - Each letter fades in with staggered animation delays (0.1s increments)
+  - A colorful radial-gradient spotlight sweeps left-to-right over the letters
+    via a mask + keyframe animation (2s alternate, 4s opacity cycle)
+  - Accepts an optional `message` prop (defined in component signature but
+    currently the visual only shows "Generating" — message string intended
+    for future contextual text support)
+  - Used in: App.jsx, ResumeUpload, InterviewSession, FeedbackDashboard,
+    SessionHistory, SessionDetailPage, UserProfile, HRLoginScreen, HRDashboard
+
+--------------------------------------------------------------------------------
+Dashboard.jsx (Shell / Layout)
+--------------------------------------------------------------------------------
+File    : frontend/src/components/Dashboard.jsx
+Purpose : Application shell that wraps all student-side internal views.
+
+Specifications:
+  - Collapsible sidebar (slides in on mobile via .open class)
+    - Brand logo + name
+    - Navigation: Home | Resume Interview | Role Interview | History | My Profile
+    - Footer: user avatar initial + name + email | theme toggle | Logout button
+  - Desktop header with app title and logout button
+  - Mobile hamburger menu button (fixed position)
+  - Sidebar overlay (click-outside-to-close)
+  - renderCurrentView() switch renders the active sub-page into the main content area
+  - Handles logout: POST /api/logout/ → clears JWT token → sets user to null
+
+--------------------------------------------------------------------------------
+api.js
+--------------------------------------------------------------------------------
+File    : frontend/src/api.js
+Purpose : Centralized API utility and JWT token management.
+
+Functions:
+  - getApiUrl(endpoint)   — Prepends VITE_API_BASE_URL env var to endpoint
+  - saveToken(token)      — Saves JWT to localStorage under "cognivue_token"
+  - getToken()            — Reads JWT from localStorage
+  - removeToken()         — Deletes JWT from localStorage
+  - getAuthHeaders()      — Returns { Authorization: "Bearer <token>" } or {}
+  - authFetch(url, opts)  — Wrapper around fetch() that auto-attaches JWT header
+  - updateUserProfile(data) — Authenticated POST to /api/update-profile/
+
+================================================================================
+                              BACKEND ARCHITECTURE
+================================================================================
+
+The backend is a Django REST application split into 4 apps:
+
+--------------------------------------------------------------------------------
+App: accounts  (backend/accounts/)
+--------------------------------------------------------------------------------
+Purpose : User accounts, Google OAuth, JWT authentication, session management.
+
+Models:
+  - User (extends AbstractUser)
+      Fields: email (unique, USERNAME_FIELD), username, avatar_url,
+              google_id, uid (10 chars, auto-generated: "22BAD" + 5 digits),
+              college_name, degree, branch, address, phone_number,
+              skills, location
+      Auto-generates a unique UID on first save with up to 10 retry attempts.
+
+Key Endpoints (backend/accounts/urls.py + views.py):
+  - GET  /auth/google/             — Redirects to Google OAuth consent page
+  - GET  /auth/google/callback/    — Handles OAuth callback; issues JWT;
+                                     redirects to frontend with ?token=<jwt>
+  - GET  /api/user-info/           — Returns authenticated user's profile JSON
+  - POST /api/logout/              — Clears server-side session (JWT is stateless)
+  - POST /api/update-profile/      — Updates editable profile fields
+
+JWT Utilities (backend/accounts/jwt_utils.py):
+  - generate_jwt(user)    — Signs a JWT with user ID + 7-day expiry
+  - verify_jwt(token)     — Decodes and validates the JWT
+  - Uses SECRET_KEY from Django settings as HMAC-SHA256 signing key
+
+--------------------------------------------------------------------------------
+App: interviews  (backend/interviews/)
+--------------------------------------------------------------------------------
+Purpose : Interview session lifecycle, question generation, answer storage,
+          AI-powered feedback scoring.
+
+Models:
+  - InterviewSession
+      Fields: user (FK), mode ('resume'|'role'), difficulty
+              ('beginner'|'intermediate'|'advanced'), role,
+              resume_filename, technical_skills (JSON), soft_skills (JSON),
+              projects (JSON), experience_level, resume_summary,
+              questions (JSON), answers (JSON), feedback (JSON),
+              status ('active'|'completed'), created_at, completed_at
+      Properties: overall_score (from feedback JSON), duration_minutes
+
+Key Endpoints (backend/interviews/urls.py + views.py):
+  - POST /api/upload-resume/       — Accepts PDF; runs ResumeAnalyzer;
+                                     returns extracted keywords
+  - POST /api/generate-questions/  — Accepts interviewData; runs
+                                     QuestionGenerator; creates session;
+                                     returns questions + session_id
+  - POST /api/submit-answer/       — Saves one answer to session
+  - POST /api/complete-interview/  — Triggers Gemini AI feedback scoring;
+                                     marks session completed; returns feedback
+  - GET  /api/session-history/     — Returns all completed sessions for user
+  - GET  /api/analytics/           — Returns aggregated stats (totals, avg score,
+                                     best score, by difficulty, resume/role counts)
+  - GET  /api/session/<id>/        — Returns full session detail (questions,
+                                     answers, feedback) for a specific session
+
+--------------------------------------------------------------------------------
+App: hr  (backend/hr/)
+--------------------------------------------------------------------------------
+Purpose : HR professional accounts, OTP authentication, candidate search API.
+
+Models (backend/hr/models.py):
+  - HRUser: name, email, company, password_hash, is_verified,
+            otp_code, otp_created_at
+  - (Reads from accounts.User for candidate data)
+
+Key Endpoints (backend/hr/urls.py + views.py):
+  - POST /hr/register/             — Creates HRUser; generates OTP; returns
+                                     OTP code for EmailJS to send
+  - POST /hr/verify-otp/           — Verifies 6-digit OTP; marks as verified;
+                                     sets session cookie for HR
+  - POST /hr/login/                — Authenticates HR by email+password;
+                                     sets session cookie
+  - POST /hr/logout/               — Clears HR session cookie
+  - POST /hr/resend-otp/           — Generates new OTP for email
+  - GET  /hr/me/                   — Returns logged-in HR user info
+  - GET  /hr/roles/                — Returns list of distinct roles from all
+                                     completed interview sessions
+  - GET  /hr/search/uid/?uid=X     — Returns candidate profile + all their
+                                     sessions matching the UID
+  - GET  /hr/search/role/?role=X   — Returns all candidates with completed
+                                     sessions for the given role
+  - GET  /hr/session/<id>/         — Returns full session detail + candidate
+                                     info for HR inspection
+
+Email Service (backend/hr/email_service.py):
+  - OTP delivery handled client-side via EmailJS SDK in HRLoginScreen.jsx
+  - The backend generates and stores the OTP; EmailJS sends the email
+
+--------------------------------------------------------------------------------
+App: core  (backend/core/)
+--------------------------------------------------------------------------------
+Purpose : AI integrations — resume parsing and question generation.
+
+Files:
+  gemini.py
+  - Initializes the Google genai.Client using GEMINI_API_KEY from settings
+  - Provides a singleton client instance used by both modules
+
+  resume_analyzer.py  (ResumeAnalyzer class)
+  - Parses PDF resumes using PyPDF2 or pdfplumber
+  - Sends raw text to Gemini AI with a structured extraction prompt
+  - Returns JSON with:
+      technical_skills: [{name, proficiency, category}]
+      soft_skills: [{skill, evidence}]
+      projects: [{title, description, technologies, role, impact}]
+      experience_level: beginner | intermediate | senior
+      resume_summary: one-paragraph summary
+
+  question_generator.py  (QuestionGenerator class)
+  - RESUME-BASED MODE:
+      generate_resume_based_questions(technical_skills, soft_skills, projects, difficulty)
+      → _generate_technical_questions() — Prompts Gemini for EXACTLY 5 Qs
+                                          about listed tech skills, difficulty-adjusted
+      → _generate_hr_questions()        — Prompts Gemini for EXACTLY 4 behavioral Qs
+                                          including ≥2 STAR method questions
+      → _generate_project_questions()   — Prompts Gemini for EXACTLY 3 project Qs
+                                          probing depth of involvement
+      All use response_mime_type="application/json" and retry up to 2 times.
+      Raises Exception if LLM fails after retries (no silent fallbacks).
+
+  - ROLE-BASED MODE:
+      generate_role_based_questions(role, difficulty)
+      → Prompts Gemini for:
+          3 HR/behavioral questions
+          4 technical questions
+          3 situational/cultural fit questions
+      Uses regex JSON extraction; retries up to 3 times with exponential
+      backoff; returns error dict if all attempts fail.
+
+  - Model used: "gemini-3-flash-preview" with temperature=0.7
+
+================================================================================
+                          AUTHENTICATION FLOWS SUMMARY
+================================================================================
+
+STUDENT LOGIN FLOW:
+  1. User clicks "Continue with Google" → redirected to /auth/google/
+  2. Google OAuth consent → /auth/google/callback/ on backend
+  3. Backend creates/updates User record, generates JWT
+  4. Redirects to frontend /?token=<jwt>
+  5. App.jsx reads ?token=, saves to localStorage, cleans URL
+  6. All subsequent API calls send: Authorization: Bearer <token>
+
+HR LOGIN FLOW (existing account):
+  1. Enter email + password → POST /hr/login/
+  2. Backend validates, sets session cookie
+  3. Navigate to /hr-admin
+
+HR REGISTER FLOW (new account):
+  1. Fill Name/Email/Company/Password → POST /hr/register/
+  2. Backend creates HRUser, generates OTP, returns otp_code + email
+  3. Frontend sends OTP email via EmailJS SDK
+  4. User enters 6-digit OTP → POST /hr/verify-otp/
+  5. Backend verifies OTP, marks HR as verified, sets session cookie
+  6. Navigate to /hr-admin
+
+================================================================================
+                         INTERVIEW SESSION FLOW SUMMARY
+================================================================================
+
+RESUME-BASED:
+  ResumeUpload (select PDF + difficulty)
+    → POST /api/upload-resume/ (ResumeAnalyzer extracts skills/projects)
+    → InterviewSession (questions generated via POST /api/generate-questions/)
+    → User answers each question (text or voice recording)
+    → Each answer saved via POST /api/submit-answer/
+    → On last answer: POST /api/complete-interview/ (Gemini scores all answers)
+    → FeedbackDashboard (overall score, category scores, strengths, improvements)
+    → Saved in InterviewSession DB record
+
+ROLE-BASED:
+  RoleSelection (choose role + difficulty)
+    → InterviewSession (questions generated via POST /api/generate-questions/)
+    → [Same as above from step 3]
+
+================================================================================
+                              TECH STACK SUMMARY
+================================================================================
+
+Frontend:
+  - React 18 (JSX, hooks)
+  - react-router-dom v6 (BrowserRouter, Routes, Route, Navigate)
+  - styled-components (used in ResumeUpload.jsx and Loader.jsx)
+  - Web Speech API (SpeechRecognition) — voice input in InterviewSession
+  - Canvas API — animated particle backgrounds in LoginScreen + HRLoginScreen
+  - @emailjs/browser — sends OTP emails from browser in HRLoginScreen
+  - Vite (build tool, env vars via import.meta.env.VITE_API_BASE_URL)
+
+Backend:
+  - Django 4.x (Python)
+  - Django REST Framework (implied by API structure)
+  - django-allauth / google-auth — Google OAuth
+  - PyJWT or custom JWT via django settings SECRET_KEY
+  - PyPDF2 / pdfplumber — PDF text extraction
+  - google-genai SDK — Gemini API calls
+  - SQLite (local dev) / PostgreSQL (production on Render)
+
+Deployment:
+  - Frontend: Vercel (env var: VITE_API_BASE_URL = Render backend URL)
+  - Backend: Render (render.yaml configures build + start commands)
+  - Database: Render PostgreSQL
+  - File uploads: /uploads/ directory on Render
+
+================================================================================
+                            APPLICATION ROUTES MAP
+================================================================================
+
+URL Path         Component           Access
+---------------- ------------------- -------------------------------------------
+/                LoginScreen         Public (or Dashboard if logged in)
+/terms           TermsOfService      Public
+/privacy         PrivacyPolicy       Public
+/hr-login        HRLoginScreen       Public (HR only)
+/hr-admin        HRDashboard         HR authenticated
+/*               → /                 Redirect (catch-all)
+
+Dashboard Internal Views (no URL change):
+  mode-selection  →  Home screen (mode cards, hero, how-it-works)
+  resume-upload   →  ResumeUpload component
+  role-selection  →  RoleSelection component
+  interview-setup →  InterviewSession component
+  feedback        →  FeedbackDashboard component
+  history         →  SessionHistory component
+  session-detail  →  SessionDetailPage component
+  profile         →  UserProfile component
+
+================================================================================
+                        DESIGN SYSTEM & STYLING NOTES
+================================================================================
+
+- Primary theme: DARK MODE by default (stored in localStorage)
+- Toggle: available on LoginScreen footer and Dashboard sidebar/header
+- Theme class applied to document.body ("dark" or "light")
+- Color palette:
+    Purple accent   : #8b5cf6
+    Cyan accent     : #06b6d4
+    Success green   : #22c55e / #10b981
+    Warning amber   : #f59e0b
+    Danger red      : #ef4444
+    HR green theme  : #10b981 (used in HRLoginScreen + HRDashboard)
+- All styles in: frontend/src/index.css (~104 KB of CSS)
+- Glassmorphism cards on Login screens
+- Gradient orbs as decorative background blobs
+- SVG icons inline throughout (no icon library dependency)
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================
